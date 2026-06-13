@@ -9,7 +9,7 @@ const DEFAULT = {
   rollDigits: 2,
 };
 
-export default function ClassResults() {
+export default function ClassResults({ embedded = false }) {
   const [form, setForm] = useState(DEFAULT);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -56,7 +56,7 @@ export default function ClassResults() {
         if (event.type === "done") {
           setData(event.result);
           setProgress(null);
-          document.getElementById("class-output")?.scrollIntoView({ behavior: "smooth" });
+          document.getElementById("class-output")?.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       });
     } catch (err) {
@@ -69,10 +69,10 @@ export default function ClassResults() {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="card space-y-4 p-6">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <form onSubmit={handleSubmit} className={embedded ? "space-y-4" : "card space-y-4 p-6"}>
+        <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm text-slate-300">Sample Hall Ticket</label>
+            <label className="mb-1.5 block text-xs font-medium text-[rgb(var(--text-muted))]">Sample Hall Ticket</label>
             <input
               type="text"
               value={form.sampleTicket}
@@ -81,7 +81,7 @@ export default function ClassResults() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">Section Prefix</label>
+            <label className="mb-1.5 block text-xs font-medium text-[rgb(var(--text-muted))]">Section Prefix</label>
             <input
               type="text"
               value={form.prefix}
@@ -91,7 +91,7 @@ export default function ClassResults() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-slate-300">Roll Digits</label>
+            <label className="mb-1.5 block text-xs font-medium text-[rgb(var(--text-muted))]">Roll Digits</label>
             <select
               value={form.rollDigits}
               onChange={(e) => updateField("rollDigits", e.target.value)}
@@ -102,31 +102,33 @@ export default function ClassResults() {
               <option value="4">4 digits</option>
             </select>
           </div>
-          <div>
-            <label className="mb-1 block text-sm text-slate-300">Start Roll</label>
-            <input
-              type="number"
-              value={form.startRoll}
-              onChange={(e) => updateField("startRoll", e.target.value)}
-              className="input-field"
-              min="1"
-              required
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm text-slate-300">End Roll</label>
-            <input
-              type="number"
-              value={form.endRoll}
-              onChange={(e) => updateField("endRoll", e.target.value)}
-              className="input-field"
-              min="1"
-              required
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-[rgb(var(--text-muted))]">Start</label>
+              <input
+                type="number"
+                value={form.startRoll}
+                onChange={(e) => updateField("startRoll", e.target.value)}
+                className="input-field"
+                min="1"
+                required
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-medium text-[rgb(var(--text-muted))]">End</label>
+              <input
+                type="number"
+                value={form.endRoll}
+                onChange={(e) => updateField("endRoll", e.target.value)}
+                className="input-field"
+                min="1"
+                required
+              />
+            </div>
           </div>
         </div>
         <div className="flex flex-wrap gap-3">
-          <button type="submit" className="btn-primary" disabled={loading}>
+          <button type="submit" className="btn-primary sm:w-auto" disabled={loading}>
             {loading ? "Fetching Class…" : "Fetch Class Results"}
           </button>
           {data?.students?.length > 0 && (
@@ -135,33 +137,33 @@ export default function ClassResults() {
             </button>
           )}
         </div>
-        <p className="text-xs text-slate-500">
-          Fetches {form.prefix}01 … {form.prefix}
-          {String(form.endRoll).padStart(form.rollDigits, "0")} — ~20 sec per student.
+        <p className="text-xs text-[rgb(var(--text-muted))]">
+          Section {form.prefix}01–{form.prefix}
+          {String(form.endRoll).padStart(form.rollDigits, "0")} · ranked by CGPA
         </p>
       </form>
 
       {error && (
-        <div className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        <div className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400" role="alert">
           {error}
         </div>
       )}
 
       {progress && (
         <div className="mt-4">
-          <div className="h-2 overflow-hidden rounded-full bg-white/10">
+          <div className="h-2 overflow-hidden rounded-full bg-[rgb(var(--border)/0.08)]">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-brand-500 to-accent-500 transition-all"
+              className="h-full rounded-full bg-gradient-to-r from-brand-500 to-accent-500 transition-all duration-300"
               style={{ width: `${progress.pct}%` }}
             />
           </div>
-          <p className="mt-2 text-sm text-slate-400">{progress.text}</p>
+          <p className="mt-2 text-sm text-[rgb(var(--text-muted))]">{progress.text}</p>
         </div>
       )}
 
       {data && (
         <div id="class-output" className="mt-6 space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { label: "Students Found", value: data.successCount },
               { label: "Failed", value: data.failedCount },
@@ -169,16 +171,16 @@ export default function ClassResults() {
               { label: "Section", value: data.prefix },
             ].map((s) => (
               <div key={s.label} className="card p-4 text-center">
-                <div className="text-xs uppercase tracking-wider text-slate-500">{s.label}</div>
-                <div className="font-display text-2xl font-bold text-brand-200">{s.value}</div>
+                <div className="text-xs uppercase tracking-wider text-[rgb(var(--text-muted))]">{s.label}</div>
+                <div className="font-display text-2xl font-bold text-brand-300">{s.value}</div>
               </div>
             ))}
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-white/10">
+          <div className="overflow-x-auto rounded-2xl border border-[rgb(var(--border)/0.08)]">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/10 bg-white/5 text-left text-xs uppercase tracking-wider text-slate-400">
+                <tr className="border-b border-[rgb(var(--border)/0.08)] bg-[rgb(var(--border)/0.04)] text-left text-xs uppercase tracking-wider text-[rgb(var(--text-muted))]">
                   <th className="px-4 py-3">Rank</th>
                   <th className="px-4 py-3">Hall Ticket</th>
                   <th className="px-4 py-3">Name</th>
@@ -190,12 +192,12 @@ export default function ClassResults() {
               </thead>
               <tbody>
                 {data.students.map((s, i) => (
-                  <tr key={s.hallTicket} className="border-b border-white/5 hover:bg-white/[0.02]">
+                  <tr key={s.hallTicket} className="border-b border-[rgb(var(--border)/0.04)] hover:bg-[rgb(var(--border)/0.02)]">
                     <td className="px-4 py-3">{i + 1}</td>
                     <td className="px-4 py-3 font-mono text-xs">{s.hallTicket}</td>
                     <td className="px-4 py-3">{s.studentName || "—"}</td>
                     <td className="px-4 py-3">{s.branch || "—"}</td>
-                    <td className="px-4 py-3 font-bold text-brand-200">{s.cgpa || "—"}</td>
+                    <td className="px-4 py-3 font-bold text-brand-300">{s.cgpa || "—"}</td>
                     <td className="px-4 py-3">
                       {s.creditsObtained && s.creditsTotal ? `${s.creditsObtained}/${s.creditsTotal}` : "—"}
                     </td>
@@ -207,7 +209,7 @@ export default function ClassResults() {
           </div>
 
           {data.failed?.length > 0 && (
-            <details className="rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-200">
+            <details className="rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-300">
               <summary className="cursor-pointer font-semibold">Failed lookups ({data.failed.length})</summary>
               <ul className="mt-2 list-inside list-disc space-y-1">
                 {data.failed.map((f) => (

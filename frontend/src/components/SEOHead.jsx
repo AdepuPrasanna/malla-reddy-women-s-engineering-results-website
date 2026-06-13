@@ -15,14 +15,21 @@ export default function SEOHead() {
   const appSchema = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    name: "MRECW CONNECT",
-    alternateName: "Malla Reddy Engineering College for Women Results",
+    name: "MRECW Results",
+    alternateName: [
+      "Malla Reddy Engineering College for Women Results",
+      "MRECW Exam Results Portal",
+    ],
     url: SITE_URL,
     description: SEO.description,
     applicationCategory: "EducationalApplication",
     operatingSystem: "Any",
     offers: { "@type": "Offer", price: "0", priceCurrency: "INR" },
-    provider: {
+    audience: {
+      "@type": "EducationalAudience",
+      educationalRole: "student",
+    },
+    about: {
       "@type": "CollegeOrUniversity",
       name: "Malla Reddy Engineering College for Women",
       alternateName: "MRECW",
@@ -35,29 +42,45 @@ export default function SEOHead() {
     },
   };
 
+  const orgSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "MRECW Results",
+    url: SITE_URL,
+    description: SEO.description,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${SITE_URL}/?hallTicket={search_term_string}`,
+      "query-input": "required name=search_term_string",
+    },
+  };
+
   return (
     <Helmet>
+      <html lang="en" />
       <title>{SEO.title}</title>
       <meta name="description" content={SEO.description} />
       <meta name="keywords" content={SEO.keywords} />
-      <meta name="robots" content="index, follow" />
+      <meta name="robots" content="index, follow, max-image-preview:large" />
+      <meta name="author" content="MRECW Results" />
       <link rel="canonical" href={SITE_URL} />
 
       <meta property="og:type" content="website" />
       <meta property="og:url" content={SITE_URL} />
-      <meta property="og:title" content="MRECW CONNECT — Check Your Exam Results Instantly" />
+      <meta property="og:title" content="MRECW Results — Check Your Academic Performance" />
       <meta property="og:description" content={SEO.description} />
-      <meta property="og:site_name" content="MRECW CONNECT" />
+      <meta property="og:site_name" content="MRECW Results" />
       <meta property="og:locale" content="en_IN" />
 
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content="MRECW CONNECT — Exam Results Portal" />
+      <meta name="twitter:title" content="MRECW Results — Exam Results Portal" />
       <meta name="twitter:description" content={SEO.description} />
 
       <meta name="geo.region" content="IN-TG" />
-      <meta name="geo.placename" content="Hyderabad, Telangana" />
+      <meta name="geo.placename" content="Hyderabad, Telangana, India" />
 
       <script type="application/ld+json">{JSON.stringify(appSchema)}</script>
+      <script type="application/ld+json">{JSON.stringify(orgSchema)}</script>
       <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
     </Helmet>
   );

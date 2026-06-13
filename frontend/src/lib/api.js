@@ -3,36 +3,36 @@ const API_BASE = (
   (import.meta.env.DEV ? "http://127.0.0.1:3000" : "")
 ).replace(/\/$/, "");
 
-export const SITE_URL = import.meta.env.VITE_SITE_URL || "https://mrecwconnect.vercel.app";
+export const SITE_URL = import.meta.env.VITE_SITE_URL || "https://mrecwexamcell.vercel.app";
 
 export const SEO = {
-  title: "MRECW CONNECT — Malla Reddy Engineering College for Women Results | CGPA & Overall Marks",
+  title: "MRECW Results — Check CGPA, Overall Marks & Class Rankings | Malla Reddy Engineering College for Women",
   description:
-    "Check MRECW (Malla Reddy Engineering College for Women) exam results instantly. View individual CGPA, overall marks, semester grades and whole class results by hall ticket — no login required.",
+    "Check MRECW exam results instantly. View individual CGPA, overall marks, semester grades, and whole class rankings by hall ticket — fast, free, and no login required.",
   keywords:
-    "MRECW results, Malla Reddy Engineering College for Women, MRECW exam results, MRECW hall ticket, MRECW CGPA, MRECW overall marks, MRECW autonomous college, MRECW exam cell, mrecwexamcell, Hyderabad engineering results",
+    "MRECW results, Malla Reddy Engineering College for Women results, MRECW exam results, MRECW hall ticket results, MRECW CGPA checker, MRECW overall marks, MRECW class results, Hyderabad engineering college results, autonomous college results Telangana",
 };
 
 export const FAQ_ITEMS = [
   {
-    q: "How to check MRECW results without login?",
-    a: "Enter your hall ticket number (e.g. 23RH1A0511) in Individual Results and click Get Results. Your overall marks and CGPA appear within ~20 seconds.",
+    q: "How do I check my MRECW results?",
+    a: "Enter your hall ticket number (e.g. 23RH1A0511) in the search box and click Get Results. Your overall marks, semester grades, and CGPA appear within about 20 seconds.",
   },
   {
-    q: "How to check whole class results?",
-    a: "Switch to Class Results, enter section prefix (23RH1A05) and roll range (1–60). You'll get a ranked CGPA list with class average.",
+    q: "How do I view whole class results?",
+    a: "Switch to the Class Results tab, enter your section prefix (e.g. 23RH1A05) and roll range (1–60). You'll receive a ranked CGPA list with the class average.",
   },
   {
-    q: "What is MRECW hall ticket format?",
-    a: "Format: 23RH1A0511 — batch year (23), college code (RH), branch/section (1A), roll number (0511). Class prefix is everything except the last 2 digits.",
+    q: "What is the MRECW hall ticket format?",
+    a: "A typical format is 23RH1A0511 — batch year (23), college code (RH), branch/section (1A), and roll number (0511). The class prefix is everything except the last two digits.",
   },
   {
-    q: "Is this the official MRECW website?",
-    a: "No. MRECW CONNECT is an unofficial student tool. For official records visit mrecwexamcell.com.",
+    q: "Is MRECW Results free to use?",
+    a: "Yes. MRECW Results is completely free. You can check individual and class results without creating an account or logging in.",
   },
   {
     q: "Is MRECW an autonomous college?",
-    a: "Yes. Malla Reddy Engineering College for Women (MRECW) is an autonomous engineering institution in Hyderabad, affiliated with JNTUH.",
+    a: "Yes. Malla Reddy Engineering College for Women (MRECW) is an autonomous engineering institution in Hyderabad, Telangana.",
   },
 ];
 

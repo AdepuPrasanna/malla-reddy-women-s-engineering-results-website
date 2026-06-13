@@ -1,38 +1,50 @@
+import { ChartIcon, MedalIcon, UsersIcon, BoltIcon } from "./Icons";
+
 const FEATURES = [
   {
-    icon: "🎓",
-    title: "Individual Results",
-    desc: "Enter hall ticket and get complete overall marks — all semesters, subject grades, CGPA and credits.",
+    Icon: ChartIcon,
+    title: "CGPA Calculator",
+    desc: "Instantly calculate and view your cumulative grade point average with detailed semester breakdowns.",
   },
   {
-    icon: "📊",
+    Icon: MedalIcon,
+    title: "Performance Analysis",
+    desc: "Track your academic progress across semesters with clear subject grades and credit summaries.",
+  },
+  {
+    Icon: UsersIcon,
     title: "Class Rankings",
-    desc: "Fetch CGPA rankings for your entire section. Compare with classmates like JNTUH class results.",
+    desc: "Compare your performance with classmates through section-wide CGPA rankings and class averages.",
   },
   {
-    icon: "⚡",
-    title: "No ERP Login",
-    desc: "Skip Bee ERP login. We fetch from the official mrecwexamcell.com portal automatically.",
-  },
-  {
-    icon: "📥",
-    title: "Export CSV",
-    desc: "Download class results as CSV for analysis, sharing or offline records.",
+    Icon: BoltIcon,
+    title: "Instant Results",
+    desc: "Get your complete overall marks and grades within seconds — no account or login required.",
   },
 ];
 
 export default function Features() {
   return (
-    <section id="features" className="border-t border-white/10 bg-slate-900/50 py-16">
+    <section id="features" className="border-t border-[rgb(var(--border)/0.06)] py-16 sm:py-20">
       <div className="mx-auto max-w-6xl px-4">
-        <h2 className="font-display text-2xl font-bold text-white sm:text-3xl">Why MRECW CONNECT?</h2>
-        <p className="mt-2 text-slate-400">Built for MRECW students — inspired by JNTUH CONNECT.</p>
-        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {FEATURES.map((f) => (
-            <article key={f.title} className="card p-6 transition hover:border-brand-500/30">
-              <div className="text-3xl">{f.icon}</div>
-              <h3 className="mt-3 font-display font-bold text-white">{f.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-400">{f.desc}</p>
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="section-title">Everything You Need</h2>
+          <p className="mt-3 text-[rgb(var(--text-muted))]">
+            Powerful tools designed for MRECW students to track, analyze, and understand academic performance.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {FEATURES.map(({ Icon, title, desc }) => (
+            <article
+              key={title}
+              className="card group p-6 transition hover:border-brand-500/25 hover:shadow-glow"
+            >
+              <div className="feature-icon transition group-hover:bg-brand-600/30 group-hover:text-brand-300">
+                <Icon />
+              </div>
+              <h3 className="mt-4 font-display text-base font-bold">{title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-[rgb(var(--text-muted))]">{desc}</p>
             </article>
           ))}
         </div>

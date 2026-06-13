@@ -1,11 +1,11 @@
 {
-  "name": "MRECW CONNECT",
+  "name": "MRECW Results",
   "short_name": "MRECW",
   "description": "Malla Reddy Engineering College for Women exam results portal",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#020617",
-  "theme_color": "#831843",
+  "background_color": "#0a0a12",
+  "theme_color": "#7c3aed",
   "icons": [
     {
       "src": "/favicon.svg",

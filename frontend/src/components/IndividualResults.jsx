@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { fetchIndividualResults } from "../lib/api";
+import { SearchIcon } from "./Icons";
 
-export default function IndividualResults() {
+export default function IndividualResults({ embedded = false }) {
   const [hallTicket, setHallTicket] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -19,7 +20,7 @@ export default function IndividualResults() {
     try {
       const result = await fetchIndividualResults(ticket);
       setData(result);
-      document.getElementById("results-output")?.scrollIntoView({ behavior: "smooth" });
+      document.getElementById("results-output")?.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -29,37 +30,46 @@ export default function IndividualResults() {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="card p-6">
-        <label htmlFor="hallTicket" className="mb-2 block text-sm font-medium text-slate-300">
-          Hall Ticket Number
-        </label>
-        <div className="flex flex-col gap-3 sm:flex-row">
+      <form onSubmit={handleSubmit} className={embedded ? "" : "card p-6"}>
+        {!embedded && (
+          <label htmlFor="hallTicket" className="mb-2 block text-sm font-medium text-[rgb(var(--text-muted))]">
+            Hall Ticket Number
+          </label>
+        )}
+        <div className="relative">
+          <SearchIcon className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[rgb(var(--text-muted))]" />
           <input
             id="hallTicket"
             type="text"
             value={hallTicket}
             onChange={(e) => setHallTicket(e.target.value.toUpperCase())}
-            placeholder="e.g. 23RH1A0511"
-            className="input-field flex-1"
+            placeholder="Enter Hall Ticket (e.g. 23RH1A0511)"
+            className="input-field pl-12"
             required
             autoComplete="off"
+            aria-label="Hall ticket number"
           />
-          <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? "Fetching…" : "Get Results"}
-          </button>
         </div>
-        <p className="mt-2 text-xs text-slate-500">View all semester overall marks, subject grades, CGPA &amp; credits.</p>
+        <button type="submit" className="btn-primary mt-4" disabled={loading}>
+          <SearchIcon className="h-4 w-4" />
+          {loading ? "Fetching Results…" : "Get Results"}
+        </button>
+        {embedded && (
+          <p className="mt-3 text-xs text-[rgb(var(--text-muted))]">
+            View semester grades, overall marks, CGPA, and credits instantly.
+          </p>
+        )}
       </form>
 
       {error && (
-        <div className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        <div className="mt-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400" role="alert">
           {error}
         </div>
       )}
 
       {loading && (
-        <div className="mt-4 rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-4 py-3 text-sm text-indigo-200">
-          Fetching results from exam cell portal…
+        <div className="mt-4 rounded-xl border border-brand-500/20 bg-brand-500/10 px-4 py-3 text-sm text-brand-300">
+          Fetching your results… this may take up to 30 seconds.
         </div>
       )}
 
@@ -67,9 +77,9 @@ export default function IndividualResults() {
         <div id="results-output" className="mt-6 space-y-4">
           <div className="card flex flex-wrap items-start justify-between gap-6 p-6">
             <div>
-              <h3 className="font-display text-2xl font-bold text-white">{data.studentName || "Student"}</h3>
-              <p className="mt-1 font-medium text-brand-300">{data.hallTicket}</p>
-              {data.branch && <p className="text-sm text-slate-400">{data.branch}</p>}
+              <h3 className="font-display text-2xl font-bold">{data.studentName || "Student"}</h3>
+              <p className="mt-1 font-medium text-brand-400">{data.hallTicket}</p>
+              {data.branch && <p className="text-sm text-[rgb(var(--text-muted))]">{data.branch}</p>}
             </div>
             <div className="flex gap-6">
               {[
@@ -84,17 +94,17 @@ export default function IndividualResults() {
                 },
               ].map((s) => (
                 <div key={s.label} className="text-center">
-                  <div className="text-xs uppercase tracking-wider text-slate-500">{s.label}</div>
-                  <div className="font-display text-2xl font-bold text-brand-200">{s.value}</div>
+                  <div className="text-xs uppercase tracking-wider text-[rgb(var(--text-muted))]">{s.label}</div>
+                  <div className="font-display text-2xl font-bold text-brand-300">{s.value}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-white/10">
+          <div className="overflow-x-auto rounded-2xl border border-[rgb(var(--border)/0.08)]">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/10 bg-white/5 text-left text-xs uppercase tracking-wider text-slate-400">
+                <tr className="border-b border-[rgb(var(--border)/0.08)] bg-[rgb(var(--border)/0.04)] text-left text-xs uppercase tracking-wider text-[rgb(var(--text-muted))]">
                   <th className="px-4 py-3">#</th>
                   <th className="px-4 py-3">Code</th>
                   <th className="px-4 py-3">Subject</th>
@@ -105,19 +115,21 @@ export default function IndividualResults() {
               </thead>
               <tbody>
                 {(data.subjects || []).map((sub) => (
-                  <tr key={`${sub.sno}-${sub.code}`} className="border-b border-white/5 hover:bg-white/[0.02]">
+                  <tr key={`${sub.sno}-${sub.code}`} className="border-b border-[rgb(var(--border)/0.04)] hover:bg-[rgb(var(--border)/0.02)]">
                     <td className="px-4 py-3">{sub.sno}</td>
                     <td className="px-4 py-3 font-mono text-xs">{sub.code}</td>
                     <td className="px-4 py-3">{sub.name}</td>
                     <td className="px-4 py-3">
                       {(sub.grades || []).map((g) => (
-                        <span key={g} className="mr-1 rounded-md bg-indigo-500/20 px-2 py-0.5 text-xs text-indigo-200">
+                        <span key={g} className="mr-1 rounded-md bg-brand-600/15 px-2 py-0.5 text-xs text-brand-300">
                           {g}
                         </span>
                       ))}
                     </td>
                     <td className="px-4 py-3">{sub.credits || "—"}</td>
-                    <td className={`px-4 py-3 font-semibold ${sub.status === "P" ? "text-emerald-400" : sub.status === "F" ? "text-red-400" : ""}`}>
+                    <td
+                      className={`px-4 py-3 font-semibold ${sub.status === "P" ? "text-emerald-400" : sub.status === "F" ? "text-red-400" : ""}`}
+                    >
                       {sub.status || "—"}
                     </td>
                   </tr>

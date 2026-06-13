@@ -3,25 +3,76 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --surface: 10 10 18;
+    --surface-elevated: 16 16 28;
+    --surface-card: 22 22 36;
+    --text-primary: 248 250 252;
+    --text-muted: 148 163 184;
+    --border: 255 255 255;
+  }
+
+  html.light {
+    --surface: 248 250 252;
+    --surface-elevated: 255 255 255;
+    --surface-card: 255 255 255;
+    --text-primary: 15 23 42;
+    --text-muted: 100 116 139;
+    --border: 15 23 42;
+  }
+
   html {
     scroll-behavior: smooth;
   }
+
   body {
-    @apply bg-slate-950 text-slate-100 antialiased;
+    @apply bg-surface font-sans antialiased;
+    color: rgb(var(--text-primary));
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-accent-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-brand-900/30 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand-600 to-accent-600 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-900/30 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50;
   }
+
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-[rgb(var(--border)/0.12)] bg-[rgb(var(--surface-card)/0.6)] px-5 py-3 text-sm font-semibold transition hover:bg-[rgb(var(--border)/0.06)] disabled:cursor-not-allowed disabled:opacity-50;
   }
+
   .card {
-    @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm;
+    @apply rounded-2xl border border-[rgb(var(--border)/0.08)] bg-[rgb(var(--surface-card)/0.55)] shadow-card backdrop-blur-sm;
   }
+
   .input-field {
-    @apply w-full rounded-xl border border-white/15 bg-slate-900/60 px-4 py-3 text-white outline-none transition placeholder:text-slate-500 focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20;
+    @apply w-full rounded-xl border border-[rgb(var(--border)/0.12)] bg-[rgb(var(--surface-elevated)/0.8)] px-4 py-3.5 text-[rgb(var(--text-primary))] outline-none transition placeholder:text-[rgb(var(--text-muted))] focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20;
+  }
+
+  .section-title {
+    @apply font-display text-2xl font-bold sm:text-3xl;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-brand-400 to-brand-300 bg-clip-text text-transparent;
+  }
+
+  .feature-icon {
+    @apply flex h-12 w-12 items-center justify-center rounded-full bg-brand-600/20 text-brand-400;
+  }
+
+  .nav-link {
+    @apply text-sm font-medium text-[rgb(var(--text-muted))] transition hover:text-[rgb(var(--text-primary))];
+  }
+
+  .tab-btn {
+    @apply rounded-lg px-3 py-2 text-sm font-semibold transition;
+  }
+
+  .tab-btn-active {
+    @apply bg-brand-600/20 text-brand-300;
+  }
+
+  .tab-btn-inactive {
+    @apply text-[rgb(var(--text-muted))] hover:bg-[rgb(var(--border)/0.05)] hover:text-[rgb(var(--text-primary))];
   }
 }
