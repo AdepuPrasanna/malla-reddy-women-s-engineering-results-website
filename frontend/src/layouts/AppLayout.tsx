@@ -32,7 +32,7 @@ export function AppLayout() {
           mobileOpen={mobileOpen}
           onClose={() => setMobileOpen(false)}
         />
-        <div className="flex min-h-screen flex-1 flex-col">
+        <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           <TopNav
             onMenuOpen={() => setMobileOpen(true)}
             isDark={isDark}
@@ -46,13 +46,13 @@ export function AppLayout() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25 }}
-            className="mx-auto w-full max-w-content flex-1 px-4 py-6 sm:px-6 lg:px-8"
+            className="mx-auto w-full max-w-content flex-1 px-4 py-6 pb-24 sm:px-6 lg:px-8 lg:pb-6"
           >
             <Suspense fallback={<div className="py-20 text-center text-muted">Loading…</div>}>
               <Outlet />
             </Suspense>
-            <Footer />
           </motion.main>
+          <Footer />
         </div>
       </div>
       <MobileNav />

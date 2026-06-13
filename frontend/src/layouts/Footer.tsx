@@ -3,8 +3,8 @@ import { SITE_URL } from "@/shared/constants/seo";
 
 export function Footer() {
   return (
-    <footer className="mt-12 border-t border-white/10 pb-24 pt-10 lg:pb-10">
-      <div className="mx-auto grid max-w-content gap-8 px-2 sm:grid-cols-2 lg:grid-cols-4">
+    <footer className="mt-auto w-full border-t border-white/10 bg-surface px-4 pb-24 pt-10 sm:px-6 lg:px-8 lg:pb-10">
+      <div className="mx-auto grid max-w-content gap-8 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <h3 className="font-display font-semibold">MRECW Results Portal</h3>
           <p className="mt-2 text-sm text-muted">
