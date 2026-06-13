@@ -4,9 +4,11 @@ import { PAGES } from "../lib/routes";
 
 const PAGE_TITLES = {
   [PAGES.home.id]: "MRECW Results — Academic Results Portal",
+  [PAGES.allResults.id]: "All Results — MRECW Results",
   [PAGES.academicResult.id]: "Academic Result — MRECW Results",
   [PAGES.backlogReport.id]: "Backlog Report — MRECW Results",
   [PAGES.classResult.id]: "Class Result — MRECW Results",
+  [PAGES.creditsChecker.id]: "Credits Checker — MRECW Results",
   [PAGES.resultContrast.id]: "Result Contrast — MRECW Results",
   [PAGES.helpCenter.id]: "Help Center — MRECW Results",
 };

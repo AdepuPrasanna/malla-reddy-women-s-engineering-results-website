@@ -87,4 +87,60 @@
   .home-card {
     @apply card p-6 transition hover:border-brand-500/25 hover:bg-[rgb(var(--surface-card)/0.8)];
   }
+
+  .result-shell-card {
+    @apply rounded-2xl border border-[rgb(var(--border)/0.18)] bg-[rgb(var(--surface-card)/0.35)] px-6 py-10 sm:px-10 sm:py-12;
+  }
+
+  .result-shell-title {
+    @apply text-center font-display text-3xl font-extrabold tracking-tight sm:text-4xl;
+  }
+
+  .input-shell {
+    @apply w-full rounded-xl border border-[rgb(var(--border)/0.15)] bg-[rgb(var(--surface-elevated)/0.9)] px-4 py-3.5 text-center text-[rgb(var(--text-primary))] outline-none transition placeholder:text-[rgb(var(--text-muted))] focus:border-[rgb(var(--border)/0.3)];
+  }
+
+  .btn-result {
+    @apply mx-auto block min-w-[140px] rounded-xl border border-[rgb(var(--border)/0.15)] bg-[rgb(var(--border)/0.12)] px-8 py-3 text-sm font-semibold text-[rgb(var(--text-primary))] transition hover:bg-[rgb(var(--border)/0.2)] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  html.light .btn-result {
+    @apply bg-neutral-200 text-neutral-900 hover:bg-neutral-300;
+  }
+
+  .sidebar-sublink {
+    @apply block w-full rounded-lg px-3 py-2 text-left text-sm text-[rgb(var(--text-muted))] transition hover:bg-[rgb(var(--border)/0.05)] hover:text-[rgb(var(--text-primary))];
+  }
+
+  .sidebar-sublink-active {
+    @apply bg-brand-600/15 font-medium text-brand-300;
+  }
+
+  .help-center-title {
+    @apply font-display text-3xl font-extrabold uppercase tracking-wide text-sky-400 sm:text-4xl;
+  }
+
+  .help-action-card {
+    @apply flex w-full items-center gap-4 rounded-2xl border bg-[rgb(var(--surface-card)/0.4)] p-5 text-left transition hover:bg-[rgb(var(--surface-card)/0.65)];
+  }
+
+  .help-action-blue {
+    @apply border-sky-500/20 hover:border-sky-500/35;
+  }
+
+  .help-action-purple {
+    @apply border-brand-500/20 hover:border-brand-500/35;
+  }
+
+  .help-action-icon {
+    @apply flex h-12 w-12 shrink-0 items-center justify-center rounded-full;
+  }
+
+  .help-action-icon-blue {
+    @apply bg-sky-500/15 text-sky-400;
+  }
+
+  .help-action-icon-purple {
+    @apply bg-brand-600/15 text-brand-400;
+  }
 }
