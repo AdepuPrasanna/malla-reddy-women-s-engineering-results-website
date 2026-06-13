@@ -12,7 +12,7 @@ ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_SITE_URL=$VITE_SITE_URL
 RUN npm run build
 
-FROM mcr.microsoft.com/playwright/python:v1.49.1-jammy
+FROM mcr.microsoft.com/playwright/python:v1.60.0-jammy
 
 WORKDIR /app
 
