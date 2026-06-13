@@ -4,10 +4,23 @@ from scraper import fetch_class_results, infer_prefix, login_and_fetch_marks
 import json
 import os
 
-BASE_DIR = os.path.dirname(__file__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(BASE_DIR)
-FRONTEND_DIST = os.path.join(ROOT_DIR, "frontend", "dist")
-PUBLIC = FRONTEND_DIST if os.path.isdir(FRONTEND_DIST) else None
+
+def _resolve_frontend_dist():
+    env_path = os.environ.get("FRONTEND_DIST")
+    if env_path and os.path.isdir(env_path):
+        return env_path
+    for candidate in (
+        os.path.join(BASE_DIR, "frontend", "dist"),
+        os.path.join(ROOT_DIR, "frontend", "dist"),
+    ):
+        if os.path.isdir(candidate):
+            return candidate
+    return None
+
+
+PUBLIC = _resolve_frontend_dist()
 MAX_CLASS_RANGE = 70
 
 app = Flask(__name__)
