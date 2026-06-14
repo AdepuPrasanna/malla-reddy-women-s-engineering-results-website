@@ -108,8 +108,23 @@ The goal is to provide students with a seamless and intelligent academic experie
 
 1. Student enters a hall ticket on the frontend (no login).
 2. Frontend calls the Flask API on Render.
-3. Backend uses Playwright to fetch and parse results from the official exam cell portal.
-4. Parsed JSON is returned to the UI for display, charts, and comparisons.
+3. Backend checks **Firebase Firestore** for cached results.
+4. **Cache miss** → Playwright scrapes the exam cell portal → saves to Firebase → returns data.
+5. **Cache hit** → returns Firebase data instantly → scrapes in background → updates Firebase if results changed.
+6. Next search for the same hall ticket serves the updated cached data (fast).
+
+```
+Search Request
+     │
+     ▼
+┌─────────────┐     miss     ┌──────────────┐     ┌─────────────┐
+│  Firestore  │ ──────────►  │  Playwright  │ ──► │   Firebase  │
+│   lookup    │              │   scraper    │     │    save     │
+└─────────────┘              └──────────────┘     └─────────────┘
+     │ hit
+     ▼
+ Return cached data ──► background scrape ──► update if changed
+```
 
 ---
 
@@ -131,6 +146,8 @@ mrecw-results-portal/
 ├── backend/                     # Flask API + Playwright scraper
 │   ├── server.py                # API routes, CORS, SPA fallback
 │   ├── scraper.py               # Login, fetch, parse results HTML
+│   ├── results_service.py       # Cache-first results orchestration
+│   ├── firebase_cache.py        # Firestore read/write + change detection
 │   ├── fetch_class.py           # Class results batch fetch helpers
 │   ├── requirements.txt         # Python dependencies
 │   └── .env.example             # Backend env template
@@ -224,6 +241,7 @@ mrecw-results-portal/
 |------------|---------|
 | Flask | REST API server |
 | Flask-CORS | Cross-origin requests from Vercel |
+| Firebase Admin | Firestore cache for student results |
 | Playwright 1.60 | Browser automation for result scraping |
 | BeautifulSoup4 | HTML parsing |
 | Gunicorn | Production WSGI server (Render) |
@@ -350,6 +368,7 @@ python server.py     # Dev server on :3000
 |----------|----------|-------------|---------|
 | `VITE_API_URL` | Production | Backend API base URL | `https://malla-reddy-women-s-engineering-results.onrender.com` |
 | `VITE_SITE_URL` | Production | Public site URL (SEO, sitemap) | `https://mrecwexamcell.vercel.app` |
+| `VITE_FIREBASE_*` | Optional | Firebase client config (Analytics) | See [Firebase setup](#firebase-setup-firestore-cache) |
 
 ```env
 VITE_API_URL=https://malla-reddy-women-s-engineering-results.onrender.com
@@ -365,12 +384,52 @@ VITE_SITE_URL=https://mrecwexamcell.vercel.app
 | `PYTHONUNBUFFERED` | Render | Real-time logs | `1` |
 | `FLASK_DEBUG` | Optional | Enable Flask debug mode locally | `false` |
 | `FRONTEND_DIST` | Optional | Path to built frontend (Docker only) | `/app/frontend/dist` |
+| `FIREBASE_CREDENTIALS_JSON` | Optional | Firebase service account JSON (single-line string) | `{"type":"service_account",...}` |
+| `FIREBASE_CREDENTIALS_PATH` | Optional | Local path to service account file | `./firebase-service-account.json` |
+| `FIREBASE_SYNC_REFRESH` | Optional | Scrape on every cache hit (slower, always fresh) | `false` |
 
 ```env
 PORT=10000
 ALLOWED_ORIGINS=https://mrecwexamcell.vercel.app
 PYTHONUNBUFFERED=1
+FIREBASE_CREDENTIALS_JSON={"type":"service_account","project_id":"your-project",...}
+FIREBASE_SYNC_REFRESH=false
 ```
+
+> Without Firebase credentials, the API still works but scrapes the portal on every request.
+
+### Firebase setup (Firestore cache + Analytics)
+
+**Project:** `malla-reddy-results-webs-ec93d`
+
+#### Backend (Firestore cache — required for fast cached results)
+
+1. Open [Firebase Console](https://console.firebase.google.com/) → project **malla-reddy-results-webs-ec93d**.
+2. Enable **Firestore Database** → Start in **production mode** (or test mode for dev).
+3. **Project Settings** → **Service accounts** → **Generate new private key** → download JSON.
+4. Add to Render as `FIREBASE_CREDENTIALS_JSON` — paste the **entire JSON file contents** as one line.
+5. Firestore collection used: `mrecw_results` (document ID = hall ticket, e.g. `23RH1A0511`).
+6. Redeploy Render backend. Check `/api/health` — `"firebaseCache": true` means cache is active.
+
+**Firestore security:** The backend uses a service account (Admin SDK). Do not expose this JSON in the frontend or commit it to GitHub.
+
+#### Frontend (Firebase Analytics)
+
+Add these in **Vercel → Environment Variables** (from Firebase Console → Project settings → Your apps):
+
+| Variable | Value |
+|----------|-------|
+| `VITE_FIREBASE_API_KEY` | Your web app API key |
+| `VITE_FIREBASE_AUTH_DOMAIN` | `malla-reddy-results-webs-ec93d.firebaseapp.com` |
+| `VITE_FIREBASE_PROJECT_ID` | `malla-reddy-results-webs-ec93d` |
+| `VITE_FIREBASE_STORAGE_BUCKET` | `malla-reddy-results-webs-ec93d.firebasestorage.app` |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | `476309209964` |
+| `VITE_FIREBASE_APP_ID` | `1:476309209964:web:185ac0a1d2663189726949` |
+| `VITE_FIREBASE_MEASUREMENT_ID` | `G-MMGG20Z3E8` |
+
+For local dev: copy `frontend/.env.example` to `frontend/.env` and fill in your API key.
+
+> **Note:** The client Firebase config powers **Analytics** on the frontend. Result caching uses the **backend service account** — students never read Firestore directly from the browser.
 
 ---
 
@@ -378,8 +437,9 @@ PYTHONUNBUFFERED=1
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/api/health` | Health check |
-| `GET` | `/api/results/<hall_ticket>` | Full academic marksheet |
+| `GET` | `/api/health` | Health check (+ Firebase cache status) |
+| `GET` | `/api/results/<hall_ticket>` | Full academic marksheet (Firebase cache → scrape) |
+| `GET` | `/api/results/<hall_ticket>?refresh=1` | Force scrape and refresh Firebase cache |
 | `POST` | `/api/results` | Full marksheet (JSON body: `{ "hallTicket": "..." }`) |
 | `GET` | `/api/backlog-report/<hall_ticket>` | Backlog subjects only |
 | `POST` | `/api/backlog-report` | Backlog report (JSON body: `{ "hallTicket": "..." }`) |
@@ -606,6 +666,8 @@ Inspired by: Vercel · Stripe · Linear · GitHub · Notion
 | **First request very slow** | Render free tier cold start + Playwright launch (~30–60s) |
 | **Build fails: TS5103** | Use pinned TypeScript `5.9.3` (see `frontend/package.json`) |
 | **Playwright version mismatch** | Docker image and `requirements.txt` must both use `playwright==1.60.0` |
+| **Firebase cache not working** | Set `FIREBASE_CREDENTIALS_JSON` on Render; verify `/api/health` shows `firebaseCache: true` |
+| **Stale results shown** | Use `?refresh=1` or set `FIREBASE_SYNC_REFRESH=true`; background refresh updates cache for next search |
 | **Class results timeout** | Class fetch scans many roll numbers — can take several minutes |
 | **Theme not changing** | Clear cache; theme uses CSS variables on `.dark` / `.light` classes |
 | **Local API not reached** | Backend must run on port `3000`; Vite proxy handles `/api` in dev |

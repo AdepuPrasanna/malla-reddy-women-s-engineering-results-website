@@ -1,0 +1,49 @@
+rules_version = '2';
+
+// All Firestore access goes through the Python backend (Firebase Admin SDK).
+// Client apps must not read or write these collections directly.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Student result cache
+    match /mrecw_results/{docId} {
+      allow read, write: if false;
+    }
+    match /mrecw_backlog_reports/{docId} {
+      allow read, write: if false;
+    }
+    match /mrecw_class_results/{docId} {
+      allow read, write: if false;
+    }
+    match /mrecw_result_contrast/{docId} {
+      allow read, write: if false;
+    }
+    match /mrecw_credits_contrast/{docId} {
+      allow read, write: if false;
+    }
+
+    // Analytics & search tracking
+    match /mrecw_analytics/{docId} {
+      allow read, write: if false;
+    }
+    match /mrecw_search_index/{docId} {
+      allow read, write: if false;
+    }
+
+    // CMS: feedback, admin users, site settings
+    match /mrecw_feedback/{docId} {
+      allow read, write: if false;
+    }
+    match /mrecw_admin_users/{docId} {
+      allow read, write: if false;
+    }
+    match /mrecw_settings/{docId} {
+      allow read, write: if false;
+    }
+
+    // Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

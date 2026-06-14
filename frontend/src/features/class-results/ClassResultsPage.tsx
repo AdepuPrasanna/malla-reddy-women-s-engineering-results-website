@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { CacheBadge } from "@/shared/components/CacheBadge";
 import { HallTicketSearch } from "@/shared/components/HallTicketSearch";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
 import { Card } from "@/shared/components/ui/Card";
-import { exportClassCsv, streamClassResults } from "@/shared/lib/api";
+import { exportClassCsv, fetchClassResults, streamClassResults } from "@/shared/lib/api";
 import type { ClassResult } from "@/shared/types/results";
 
 const ROLL_DIGITS = 2;
@@ -21,21 +22,33 @@ export default function ClassResultsPage() {
     setLoading(true);
     setError("");
     setData(null);
-    setProgress({ pct: 0, text: "Starting class fetch…" });
+    setProgress(null);
+
+    const payload = {
+      prefix,
+      sampleTicket: ticket,
+      startRoll: 1,
+      endRoll: END_ROLL,
+      rollDigits: ROLL_DIGITS,
+    };
 
     try {
-      await streamClassResults(
-        { prefix, sampleTicket: ticket, startRoll: 1, endRoll: END_ROLL, rollDigits: ROLL_DIGITS },
-        (event) => {
-          if (event.type === "progress") {
-            setProgress({
-              pct: Math.round(((event.current as number) / (event.total as number)) * 100),
-              text: `Checking ${event.hallTicket} (${event.current}/${event.total})`,
-            });
-          }
-          if (event.type === "done") setData(event.result as ClassResult);
+      const cached = await fetchClassResults(payload);
+      if (cached._meta?.cached) {
+        setData(cached);
+        return;
+      }
+
+      setProgress({ pct: 0, text: "Fetching class results…" });
+      await streamClassResults(payload, (event) => {
+        if (event.type === "progress") {
+          setProgress({
+            pct: Math.round(((event.current as number) / (event.total as number)) * 100),
+            text: `Checking ${event.hallTicket} (${event.current}/${event.total})`,
+          });
         }
-      );
+        if (event.type === "done") setData(event.result as ClassResult);
+      });
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -51,10 +64,10 @@ export default function ClassResultsPage() {
         <p className="mt-2 text-muted">Section-wide CGPA rankings and class average</p>
       </header>
 
-      <HallTicketSearch onSearch={handleSearch} loading={loading} placeholder="Enter any hall ticket from your section" />
+      <HallTicketSearch onSearch={handleSearch} loading={loading && !data} placeholder="Enter any hall ticket from your section" />
 
       {error && <div className="rounded-card border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">{error}</div>}
-      {progress && (
+      {progress && !data && (
         <Card>
           <div className="h-2 overflow-hidden rounded-full bg-foreground/10">
             <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progress.pct}%` }} />
@@ -65,7 +78,8 @@ export default function ClassResultsPage() {
 
       {data && (
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-          <div className="flex justify-end">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <CacheBadge meta={data._meta} />
             <Button variant="secondary" onClick={() => exportClassCsv(data)}>Export CSV</Button>
           </div>
           <div className="grid gap-4 sm:grid-cols-4">

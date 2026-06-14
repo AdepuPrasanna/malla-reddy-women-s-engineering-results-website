@@ -8,11 +8,12 @@ import { fetchResults, queryKeys } from "@/shared/lib/api";
 export default function PerformanceTrendsPage() {
   const [ticket, setTicket] = useState("");
 
-  const { data, error, isFetching } = useQuery({
+  const { data, error, isLoading, isFetching } = useQuery({
     queryKey: queryKeys.results(ticket),
     queryFn: () => fetchResults(ticket),
     enabled: !!ticket,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
   });
 
   return (
@@ -22,12 +23,12 @@ export default function PerformanceTrendsPage() {
         <p className="mt-2 text-muted">Semester SGPA, CGPA growth, pass rate and backlog analytics</p>
       </header>
 
-      <HallTicketSearch onSearch={setTicket} loading={isFetching} />
+      <HallTicketSearch onSearch={setTicket} loading={isFetching && !data} />
 
       {error && <div className="rounded-card border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">{(error as Error).message}</div>}
-      {isFetching && <ResultSkeleton />}
-      {!ticket && !isFetching && <EmptyAnalytics />}
-      {data && !isFetching && <AnalyticsCharts data={data} />}
+      {isLoading && <ResultSkeleton />}
+      {!ticket && !isLoading && <EmptyAnalytics />}
+      {data && <AnalyticsCharts data={data} />}
     </div>
   );
 }

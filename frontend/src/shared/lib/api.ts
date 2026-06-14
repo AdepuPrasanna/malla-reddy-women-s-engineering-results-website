@@ -1,9 +1,11 @@
 import type {
   BacklogReport,
   ClassResult,
+  CreditsCompare,
   ResultContrast,
   StudentResult,
 } from "@/shared/types/results";
+import type { FooterSettings } from "@/shared/types/settings";
 
 const API_BASE = (
   import.meta.env.VITE_API_URL ||
@@ -41,6 +43,30 @@ export async function fetchResultContrast(hallTicketA: string, hallTicketB: stri
     body: JSON.stringify({ hallTicketA, hallTicketB }),
   });
   return parseJson<ResultContrast>(res);
+}
+
+export async function fetchCreditsCompare(hallTicketA: string, hallTicketB: string): Promise<CreditsCompare> {
+  const res = await fetch(apiUrl("/api/credits-compare"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ hallTicketA, hallTicketB }),
+  });
+  return parseJson<CreditsCompare>(res);
+}
+
+export async function fetchClassResults(payload: {
+  prefix?: string;
+  sampleTicket: string;
+  startRoll?: number;
+  endRoll?: number;
+  rollDigits?: number;
+}): Promise<ClassResult> {
+  const res = await fetch(apiUrl("/api/class-results"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return parseJson<ClassResult>(res);
 }
 
 export async function streamClassResults(
@@ -109,4 +135,20 @@ export const queryKeys = {
   results: (ticket: string) => ["results", ticket] as const,
   backlog: (ticket: string) => ["backlog", ticket] as const,
   contrast: (a: string, b: string) => ["contrast", a, b] as const,
+  creditsCompare: (a: string, b: string) => ["credits-compare", a, b] as const,
+  footer: () => ["footer-settings"] as const,
 };
+
+export async function submitFeedback(message: string) {
+  const res = await fetch(apiUrl("/api/feedback"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message }),
+  });
+  return parseJson<{ id: string; message: string; status: string }>(res);
+}
+
+export async function fetchFooterSettings() {
+  const res = await fetch(apiUrl("/api/settings/footer"));
+  return parseJson<FooterSettings>(res);
+}

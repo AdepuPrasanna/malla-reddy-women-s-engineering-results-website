@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { GraduationCap, TrendingUp } from "lucide-react";
+import { CacheBadge } from "@/shared/components/CacheBadge";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Card } from "@/shared/components/ui/Card";
 import type { StudentResult } from "@/shared/types/results";
@@ -27,6 +28,7 @@ export function ResultView({ data }: ResultViewProps) {
                 {data.branch && <p className="mt-1 text-sm text-muted">{data.branch}</p>}
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Badge variant="primary">Autonomous · MRECW</Badge>
+                  <CacheBadge meta={data._meta} />
                   <Badge variant="success">{passed} Passed</Badge>
                   {failed > 0 && <Badge variant="error">{failed} Backlogs</Badge>}
                 </div>

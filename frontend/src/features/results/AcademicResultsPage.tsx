@@ -19,11 +19,12 @@ export default function AcademicResultsPage() {
     if (initial) setTicket(initial);
   }, [initial]);
 
-  const { data, error, isFetching } = useQuery({
+  const { data, error, isLoading, isFetching } = useQuery({
     queryKey: queryKeys.results(ticket),
     queryFn: () => fetchResults(ticket),
     enabled: !!ticket,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
     retry: 1,
   });
 
@@ -39,7 +40,7 @@ export default function AcademicResultsPage() {
         <p className="mt-2 text-muted">Complete marksheet, CGPA and semester performance</p>
       </header>
 
-      <HallTicketSearch onSearch={handleSearch} loading={isFetching} defaultValue={initial} />
+      <HallTicketSearch onSearch={handleSearch} loading={isFetching && !data} defaultValue={initial} />
 
       {error && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-card border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">
@@ -47,8 +48,8 @@ export default function AcademicResultsPage() {
         </motion.div>
       )}
 
-      {isFetching && <ResultSkeleton />}
-      {data && !isFetching && (
+      {isLoading && <ResultSkeleton />}
+      {data && (
         <>
           <ResultView data={data} />
           <AnalyticsCharts data={data} />

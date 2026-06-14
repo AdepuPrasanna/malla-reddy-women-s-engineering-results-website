@@ -13,3 +13,7 @@ services:
         sync: false
       - key: PYTHONUNBUFFERED
         value: "1"
+      - key: FIREBASE_CREDENTIALS_JSON
+        sync: false
+      - key: FIREBASE_SYNC_REFRESH
+        value: "false"

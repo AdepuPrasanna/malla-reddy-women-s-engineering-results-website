@@ -276,22 +276,14 @@ def build_result_contrast(data_a: dict, data_b: dict) -> dict:
     credits_b = _parse_float(data_b.get("creditsObtained"))
     credits_diff = round(credits_a - credits_b, 2) if credits_a is not None and credits_b is not None else None
 
-    def summary(data, backlog_count):
-        return {
-            "hallTicket": data.get("hallTicket"),
-            "studentName": data.get("studentName"),
-            "branch": data.get("branch"),
-            "cgpa": data.get("cgpa"),
-            "creditsObtained": data.get("creditsObtained"),
-            "creditsTotal": data.get("creditsTotal"),
-            "subjectsDue": data.get("subjectsDue"),
-            "subjectsTotal": data.get("subjectsTotal"),
-            "backlogCount": backlog_count,
-        }
+    def full_student(data: dict, backlog_count: int) -> dict:
+        profile = {k: v for k, v in data.items() if k != "error"}
+        profile["backlogCount"] = backlog_count
+        return profile
 
     return {
-        "first": summary(data_a, len(backlogs_a)),
-        "second": summary(data_b, len(backlogs_b)),
+        "first": full_student(data_a, len(backlogs_a)),
+        "second": full_student(data_b, len(backlogs_b)),
         "comparison": {
             "cgpaDifference": cgpa_diff,
             "creditsDifference": credits_diff,
@@ -329,6 +321,53 @@ def _credits_label(data: dict) -> str:
     if obtained and total:
         return f"{obtained}/{total}"
     return obtained or total or "—"
+
+
+def build_credits_contrast(data_a: dict, data_b: dict) -> dict:
+    def credits_profile(data: dict) -> dict:
+        obtained = _parse_float(data.get("creditsObtained"))
+        total = _parse_float(data.get("creditsTotal")) or 0
+        remaining = round(max(total - (obtained or 0), 0), 2) if total else None
+        pct = round(((obtained or 0) / total) * 100) if total else None
+        return {
+            "hallTicket": data.get("hallTicket"),
+            "studentName": data.get("studentName"),
+            "branch": data.get("branch"),
+            "cgpa": data.get("cgpa"),
+            "creditsObtained": data.get("creditsObtained"),
+            "creditsTotal": data.get("creditsTotal"),
+            "creditsRemaining": remaining,
+            "completionPercent": pct,
+            "subjectsDue": data.get("subjectsDue"),
+            "subjectsTotal": data.get("subjectsTotal"),
+            "subjects": data.get("subjects") or [],
+        }
+
+    first = credits_profile(data_a)
+    second = credits_profile(data_b)
+    obtained_a = _parse_float(data_a.get("creditsObtained"))
+    obtained_b = _parse_float(data_b.get("creditsObtained"))
+    credits_diff = round(obtained_a - obtained_b, 2) if obtained_a is not None and obtained_b is not None else None
+    pct_a = first.get("completionPercent")
+    pct_b = second.get("completionPercent")
+    pct_diff = round(pct_a - pct_b, 1) if pct_a is not None and pct_b is not None else None
+
+    return {
+        "first": first,
+        "second": second,
+        "comparison": {
+            "creditsDifference": credits_diff,
+            "completionPercentDifference": pct_diff,
+            "metrics": [
+                {"label": "Credits Earned", "first": first.get("creditsObtained"), "second": second.get("creditsObtained")},
+                {"label": "Credits Required", "first": first.get("creditsTotal"), "second": second.get("creditsTotal")},
+                {"label": "Remaining Credits", "first": first.get("creditsRemaining"), "second": second.get("creditsRemaining")},
+                {"label": "Completion %", "first": first.get("completionPercent"), "second": second.get("completionPercent")},
+                {"label": "Subjects Due", "first": first.get("subjectsDue"), "second": second.get("subjectsDue")},
+                {"label": "CGPA", "first": first.get("cgpa"), "second": second.get("cgpa")},
+            ],
+        },
+    }
 
 
 def fetch_backlog_report(hall_ticket: str) -> dict:

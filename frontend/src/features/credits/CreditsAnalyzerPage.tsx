@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { CacheBadge } from "@/shared/components/CacheBadge";
 import { HallTicketSearch } from "@/shared/components/HallTicketSearch";
 import { Card } from "@/shared/components/ui/Card";
 import { ResultSkeleton } from "@/shared/components/ui/Skeleton";
@@ -9,11 +10,12 @@ import { fetchResults, queryKeys } from "@/shared/lib/api";
 export default function CreditsAnalyzerPage() {
   const [ticket, setTicket] = useState("");
 
-  const { data, error, isFetching } = useQuery({
+  const { data, error, isLoading, isFetching } = useQuery({
     queryKey: queryKeys.results(ticket),
     queryFn: () => fetchResults(ticket),
     enabled: !!ticket,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
   });
 
   const obtained = parseFloat(data?.creditsObtained || "0") || 0;
@@ -28,13 +30,14 @@ export default function CreditsAnalyzerPage() {
         <p className="mt-2 text-muted">Track credit completion and academic progression</p>
       </header>
 
-      <HallTicketSearch onSearch={setTicket} loading={isFetching} />
+      <HallTicketSearch onSearch={setTicket} loading={isFetching && !data} />
 
       {error && <div className="rounded-card border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">{(error as Error).message}</div>}
-      {isFetching && <ResultSkeleton />}
+      {isLoading && <ResultSkeleton />}
 
-      {data && !isFetching && (
+      {data && (
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+          <CacheBadge meta={data._meta} />
           <Card className="text-center">
             <p className="text-sm text-muted">{data.studentName} · {data.hallTicket}</p>
             <div className="mt-4 font-display text-5xl font-extrabold gradient-text">

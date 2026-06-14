@@ -4,11 +4,14 @@ import { motion } from "framer-motion";
 import { FAQ_ITEMS } from "@/shared/constants/seo";
 import { Card } from "@/shared/components/ui/Card";
 import { Button } from "@/shared/components/ui/Button";
+import { submitFeedback } from "@/shared/lib/api";
 
 export default function HelpCenterPage() {
   const [view, setView] = useState<"home" | "faq" | "feedback">("home");
   const [feedback, setFeedback] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   if (view === "faq") {
     return (
@@ -37,9 +40,18 @@ export default function HelpCenterPage() {
         ) : (
           <Card>
             <form
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
-                setSubmitted(true);
+                setLoading(true);
+                setError("");
+                try {
+                  await submitFeedback(feedback.trim());
+                  setSubmitted(true);
+                } catch (err) {
+                  setError((err as Error).message);
+                } finally {
+                  setLoading(false);
+                }
               }}
               className="space-y-4"
             >
@@ -50,7 +62,8 @@ export default function HelpCenterPage() {
                 placeholder="Share your suggestion…"
                 required
               />
-              <Button type="submit">Submit Feedback</Button>
+              {error && <div className="rounded-btn border border-error/30 bg-error/10 px-3 py-2 text-sm text-error">{error}</div>}
+              <Button type="submit" loading={loading}>Submit Feedback</Button>
             </form>
           </Card>
         )}

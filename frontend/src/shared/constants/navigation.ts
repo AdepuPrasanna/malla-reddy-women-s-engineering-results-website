@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   LineChart,
   Medal,
+  Scale,
   Wallet,
 } from "lucide-react";
 
@@ -25,6 +26,7 @@ export const MAIN_NAV: NavItem[] = [
   { label: "Backlog Report", path: "/backlog-report", icon: BookOpen, description: "Failed subjects report" },
   { label: "Class Results", path: "/class-results", icon: Medal, description: "Section rankings" },
   { label: "Credits Analyzer", path: "/credits-analyzer", icon: Wallet, description: "Credit completion tracker" },
+  { label: "Credits Compare", path: "/credits-compare", icon: Scale, description: "Compare credits for two students" },
   { label: "Result Compare", path: "/result-compare", icon: GitCompare, description: "Compare two students" },
   { label: "Performance Trends", path: "/performance-trends", icon: LineChart, description: "SGPA & analytics" },
   { label: "Notifications", path: "/notifications", icon: Bell, description: "Updates & alerts" },
@@ -63,6 +65,14 @@ export const DASHBOARD_CARDS = [
     icon: Wallet,
     gradient: "from-emerald-600/20 to-teal-600/10",
     stat: "Credit progress",
+  },
+  {
+    title: "Credits Compare",
+    description: "Compare credit completion between two hall tickets.",
+    path: "/credits-compare",
+    icon: Scale,
+    gradient: "from-teal-600/20 to-emerald-600/10",
+    stat: "Credits vs credits",
   },
   {
     title: "CGPA Analyzer",

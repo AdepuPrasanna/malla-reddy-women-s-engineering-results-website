@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { CacheBadge } from "@/shared/components/CacheBadge";
 import { HallTicketSearch } from "@/shared/components/HallTicketSearch";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Card } from "@/shared/components/ui/Card";
@@ -12,11 +13,12 @@ export default function BacklogReportPage() {
   const [ticket, setTicket] = useState("");
   const { push } = useSearchHistory();
 
-  const { data, error, isFetching } = useQuery({
+  const { data, error, isLoading, isFetching } = useQuery({
     queryKey: queryKeys.backlog(ticket),
     queryFn: () => fetchBacklogReport(ticket),
     enabled: !!ticket,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
     retry: 1,
   });
 
@@ -32,7 +34,7 @@ export default function BacklogReportPage() {
           setTicket(value);
           push(value);
         }}
-        loading={isFetching}
+        loading={isFetching && !data}
       />
 
       {error && (
@@ -41,10 +43,13 @@ export default function BacklogReportPage() {
         </div>
       )}
 
-      {isFetching && <ResultSkeleton />}
+      {isLoading && <ResultSkeleton />}
 
-      {data && !isFetching && (
+      {data && (
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+          <div className="flex flex-wrap items-center gap-2">
+            <CacheBadge meta={data._meta} />
+          </div>
           <div className="grid gap-4 sm:grid-cols-3">
             {[
               { label: "Student", value: data.studentName || "—" },

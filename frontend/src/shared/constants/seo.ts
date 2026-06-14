@@ -31,6 +31,10 @@ export const PAGE_SEO: Record<string, { title: string; description: string }> = 
     title: "Credits Analyzer — MRECW Results Portal",
     description: "Analyze credit completion and academic progression at MRECW.",
   },
+  "/credits-compare": {
+    title: "Credits Compare — MRECW Results Portal",
+    description: "Compare credit completion and progression between two MRECW students.",
+  },
   "/result-compare": {
     title: "Result Compare — MRECW Results Portal",
     description: "Compare academic performance between two MRECW hall tickets.",
