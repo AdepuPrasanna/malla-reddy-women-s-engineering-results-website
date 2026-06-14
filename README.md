@@ -663,6 +663,8 @@ Inspired by: Vercel · Stripe · Linear · GitHub · Notion
 |-------|----------|
 | **CORS error in browser** | Set `ALLOWED_ORIGINS` on Render to your exact Vercel URL |
 | **API returns 404 on Vercel** | Ensure `VITE_API_URL` is set and frontend was redeployed |
+| **Vercel build: `cd frontend: No such file`** | Root Directory is `frontend` but Install Command still says `cd frontend && npm install`. In Vercel → Settings → Build → set Install Command to `npm install`, Build to `npm run build`, Output to `dist`. Or clear Root Directory and use repo-root `vercel.json` instead. |
+| **Direct URL 404** (`/admin/login`, `/help-center`) | Ensure `frontend/vercel.json` SPA rewrites are deployed; Root Directory must be `frontend` |
 | **First request very slow** | Render free tier cold start + Playwright launch (~30–60s) |
 | **Build fails: TS5103** | Use pinned TypeScript `5.9.3` (see `frontend/package.json`) |
 | **Playwright version mismatch** | Docker image and `requirements.txt` must both use `playwright==1.60.0` |
