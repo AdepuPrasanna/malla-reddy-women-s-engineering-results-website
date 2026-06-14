@@ -35,17 +35,17 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-surface px-4">
+    <div className="flex min-h-screen items-center justify-center bg-surface px-4 py-12 sm:px-6">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/20 text-primary-light">
-            <Shield className="h-7 w-7" />
+        <div className="mb-10 text-center">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/20 text-primary-light ring-1 ring-primary/20">
+            <Shield className="h-8 w-8" />
           </div>
-          <h1 className="font-display text-3xl font-bold">Admin Login</h1>
-          <p className="mt-2 text-sm text-muted">MRECW Results Portal control panel</p>
+          <h1 className="font-display text-3xl font-bold tracking-tight">Admin Login</h1>
+          <p className="mt-3 text-sm text-muted">MRECW Results Portal control panel</p>
         </div>
 
-        <Card>
+        <Card className="!p-8">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="mb-2 block text-sm font-medium text-muted">Username</label>

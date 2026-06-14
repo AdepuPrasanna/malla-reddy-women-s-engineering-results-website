@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Trash2, UserPlus } from "lucide-react";
 import { useState } from "react";
+import { AdminPageHeader } from "@/features/admin/AdminPageHeader";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
-import { Card } from "@/shared/components/ui/Card";
 import { Input } from "@/shared/components/ui/Input";
 import { createAdminUser, deleteAdminUser, fetchAdminUsers, updateAdminUser } from "@/shared/lib/adminApi";
 
@@ -41,16 +41,17 @@ export default function AdminUsersPage() {
   });
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="font-display text-3xl font-bold">Admin Users</h1>
-        <p className="mt-2 text-muted">Create users and assign the admin role</p>
-      </div>
+    <div className="admin-page">
+      <AdminPageHeader
+        title="Admin Users"
+        description="Create users and assign the admin role"
+      />
 
-      <Card>
+      <div className="admin-panel-card">
         <h2 className="font-display text-lg font-semibold">Create User</h2>
+        <p className="mt-1 text-sm text-muted">Add a new admin account with portal access</p>
         <form
-          className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+          className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
           onSubmit={(e) => {
             e.preventDefault();
             createUser.mutate();
@@ -70,35 +71,35 @@ export default function AdminUsersPage() {
             Create User
           </Button>
         </form>
-        {formError && <p className="mt-3 text-sm text-error">{formError}</p>}
-      </Card>
+        {formError && <p className="mt-4 text-sm text-error">{formError}</p>}
+      </div>
 
-      {error && <div className="text-sm text-error">{(error as Error).message}</div>}
+      {error && <div className="rounded-card border border-error/30 bg-error/10 px-5 py-4 text-sm text-error">{(error as Error).message}</div>}
 
-      <Card>
+      <div className="admin-panel-card">
         <h2 className="font-display text-lg font-semibold">All Users</h2>
         {isLoading ? (
-          <p className="mt-4 text-sm text-muted">Loading users…</p>
+          <p className="mt-6 text-sm text-muted">Loading users…</p>
         ) : (
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-6 overflow-x-auto rounded-xl border border-foreground/10">
             <table className="w-full min-w-[520px] text-left text-sm">
               <thead>
-                <tr className="border-b border-foreground/10 text-muted">
-                  <th className="py-2 pr-4">Username</th>
-                  <th className="py-2 pr-4">Role</th>
-                  <th className="py-2 pr-4">Status</th>
-                  <th className="py-2">Actions</th>
+                <tr className="border-b border-foreground/10 bg-surface-elevated/50 text-muted">
+                  <th className="px-4 py-3 font-medium">Username</th>
+                  <th className="px-4 py-3 font-medium">Role</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {users.map((user) => (
-                  <tr key={user.id} className="border-b border-foreground/5">
-                    <td className="py-3 pr-4 font-medium">{user.username}</td>
-                    <td className="py-3 pr-4"><Badge variant="primary">{user.role}</Badge></td>
-                    <td className="py-3 pr-4">
+                  <tr key={user.id} className="border-b border-foreground/5 last:border-0">
+                    <td className="px-4 py-4 font-medium">{user.username}</td>
+                    <td className="px-4 py-4"><Badge variant="primary">{user.role}</Badge></td>
+                    <td className="px-4 py-4">
                       <Badge variant={user.active ? "success" : "error"}>{user.active ? "Active" : "Disabled"}</Badge>
                     </td>
-                    <td className="py-3">
+                    <td className="px-4 py-4">
                       <div className="flex flex-wrap gap-2">
                         <Button
                           variant="secondary"
@@ -124,7 +125,7 @@ export default function AdminUsersPage() {
             </table>
           </div>
         )}
-      </Card>
+      </div>
     </div>
   );
 }

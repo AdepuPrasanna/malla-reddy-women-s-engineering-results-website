@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link2, Plus, Save, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { AdminPageHeader } from "@/features/admin/AdminPageHeader";
 import { Button } from "@/shared/components/ui/Button";
-import { Card } from "@/shared/components/ui/Card";
 import { Input } from "@/shared/components/ui/Input";
 import { fetchAdminFooter, saveAdminFooter } from "@/shared/lib/adminApi";
 import { queryKeys } from "@/shared/lib/api";
@@ -87,33 +87,33 @@ export default function AdminFooterPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl font-bold">Footer Links</h1>
-          <p className="mt-2 text-muted">Manage footer sections and links — changes appear on the student portal immediately</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="secondary" onClick={addSection}>
-            <Plus className="mr-2 inline h-4 w-4" />
-            Add Section
-          </Button>
-          <Button onClick={() => saveFooter.mutate()} loading={saveFooter.isPending}>
-            <Save className="mr-2 inline h-4 w-4" />
-            {saved ? "Saved!" : "Save Footer"}
-          </Button>
-        </div>
-      </div>
+    <div className="admin-page">
+      <AdminPageHeader
+        title="Footer Links"
+        description="Manage footer sections and links — changes appear on the student portal immediately"
+        action={
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" onClick={addSection}>
+              <Plus className="mr-2 inline h-4 w-4" />
+              Add Section
+            </Button>
+            <Button onClick={() => saveFooter.mutate()} loading={saveFooter.isPending}>
+              <Save className="mr-2 inline h-4 w-4" />
+              {saved ? "Saved!" : "Save Footer"}
+            </Button>
+          </div>
+        }
+      />
 
-      {error && <div className="text-sm text-error">{(error as Error).message}</div>}
-      {saveFooter.isError && <div className="text-sm text-error">{(saveFooter.error as Error).message}</div>}
+      {error && <div className="rounded-card border border-error/30 bg-error/10 px-5 py-4 text-sm text-error">{(error as Error).message}</div>}
+      {saveFooter.isError && <div className="rounded-card border border-error/30 bg-error/10 px-5 py-4 text-sm text-error">{(saveFooter.error as Error).message}</div>}
 
       {isLoading ? (
-        <Card className="py-12 text-center text-muted">Loading footer settings…</Card>
+        <div className="admin-panel-card py-16 text-center text-muted">Loading footer settings…</div>
       ) : (
         <div className="space-y-6">
           {sections.map((section, sectionIndex) => (
-            <Card key={section.id} className="space-y-4">
+            <div key={section.id} className="admin-panel-card space-y-5">
               <div className="flex flex-wrap items-center gap-3">
                 <Link2 className="h-5 w-5 text-primary-light" />
                 <Input
@@ -129,7 +129,7 @@ export default function AdminFooterPage() {
 
               <div className="space-y-3">
                 {section.links.map((link, linkIndex) => (
-                  <div key={link.id} className="grid gap-2 rounded-btn border border-foreground/10 p-3 sm:grid-cols-[1fr_1fr_auto_auto]">
+                  <div key={link.id} className="grid gap-3 rounded-xl border border-foreground/10 bg-surface-elevated/30 p-4 sm:grid-cols-[1fr_1fr_auto_auto]">
                     <Input
                       value={link.label}
                       onChange={(e) => updateLink(sectionIndex, linkIndex, { label: e.target.value })}
@@ -159,7 +159,7 @@ export default function AdminFooterPage() {
                 <Plus className="mr-2 inline h-4 w-4" />
                 Add Link
               </Button>
-            </Card>
+            </div>
           ))}
         </div>
       )}

@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MessageSquare } from "lucide-react";
+import { AdminPageHeader } from "@/features/admin/AdminPageHeader";
 import { Badge } from "@/shared/components/ui/Badge";
 import { Button } from "@/shared/components/ui/Button";
-import { Card } from "@/shared/components/ui/Card";
 import { fetchAdminFeedback, updateFeedbackStatus } from "@/shared/lib/adminApi";
 import type { FeedbackItem } from "@/shared/types/settings";
 
@@ -26,25 +26,25 @@ export default function AdminFeedbackPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl font-bold">Feedback</h1>
-        <p className="mt-2 text-muted">Suggestions submitted from the Help Center</p>
-      </div>
+    <div className="admin-page">
+      <AdminPageHeader
+        title="Feedback"
+        description="Suggestions submitted from the Help Center"
+      />
 
-      {error && <div className="text-sm text-error">{(error as Error).message}</div>}
+      {error && <div className="rounded-card border border-error/30 bg-error/10 px-5 py-4 text-sm text-error">{(error as Error).message}</div>}
 
       {isLoading ? (
-        <Card className="py-12 text-center text-muted">Loading feedback…</Card>
+        <div className="admin-panel-card py-16 text-center text-muted">Loading feedback…</div>
       ) : items.length === 0 ? (
-        <Card className="flex flex-col items-center py-12 text-center text-muted">
-          <MessageSquare className="mb-3 h-10 w-10 opacity-50" />
+        <div className="admin-panel-card flex flex-col items-center py-16 text-center text-muted">
+          <MessageSquare className="mb-4 h-12 w-12 opacity-40" />
           No feedback submitted yet.
-        </Card>
+        </div>
       ) : (
         <div className="space-y-4">
           {items.map((item) => (
-            <Card key={item.id} className="space-y-3">
+            <div key={item.id} className="admin-panel-card space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <Badge variant={statusVariant(item.status)}>{item.status}</Badge>
                 <span className="text-xs text-muted">
@@ -64,7 +64,7 @@ export default function AdminFeedbackPage() {
                   </Button>
                 )}
               </div>
-            </Card>
+            </div>
           ))}
         </div>
       )}
