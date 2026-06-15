@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import multiprocessing as mp
 import os
 import threading
 import time
@@ -56,6 +57,7 @@ _refresh_in_progress: set[str] = set()
 _refresh_guard = threading.Lock()
 _class_scrape_jobs: dict[str, dict[str, Any]] = {}
 _class_scrape_jobs_lock = threading.Lock()
+_playwright_pool_ctx = mp.get_context("spawn")
 
 
 def _utc_now_iso() -> str:
@@ -212,16 +214,6 @@ def _class_progress_from_result(result: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _class_scrape_delay_sec(delay_sec: float) -> float:
-    raw = os.getenv("CLASS_SCRAPE_DELAY")
-    if raw is not None:
-        try:
-            return max(0.0, float(raw))
-        except ValueError:
-            pass
-    return max(0.0, delay_sec)
-
-
 def _class_scrape_workers() -> int:
     raw = os.getenv("CLASS_SCRAPE_WORKERS", "20")
     try:
@@ -244,12 +236,16 @@ def _scrape_one_class_ticket(ticket: str, *, summary_only: bool = False) -> dict
 
 
 def _resolve_cached_class_student(ticket: str, *, force_refresh: bool) -> dict | None:
+    """Firebase-only lookup — never scrape here (class scrape handles pending tickets)."""
     if force_refresh or not is_enabled():
         return None
-    cached = resolve_class_student(ticket, force_refresh=False)
-    if "error" in cached:
+    cached = get_cached_result(ticket)
+    if not cached:
         return None
-    return cached
+    data = cached.get("data") or {}
+    if "error" in data:
+        return None
+    return to_class_student(data)
 
 
 def _execute_class_scrape(
@@ -310,7 +306,6 @@ def _execute_class_scrape(
                     current=index + 1, total=total, hall_ticket=ticket, cached_count=len(students),
                 )
         else:
-            effective_delay = _class_scrape_delay_sec(delay_sec)
             pending: list[str] = []
             resolved_count = 0
 
@@ -370,39 +365,20 @@ def _execute_class_scrape(
 
             if pending:
                 workers = _class_scrape_workers() if len(pending) > 1 else 1
-                if workers <= 1:
-                    from playwright.sync_api import sync_playwright
+                from concurrent.futures import ProcessPoolExecutor, as_completed
 
-                    with sync_playwright() as p:
-                        browser = p.chromium.launch(headless=True)
-                        context = browser.new_context(user_agent=USER_AGENT)
-                        page = context.new_page()
+                with ProcessPoolExecutor(
+                    max_workers=min(workers, len(pending)),
+                    mp_context=_playwright_pool_ctx,
+                ) as pool:
+                    futures = {pool.submit(_scrape_one_class_ticket, ticket): ticket for ticket in pending}
+                    for future in as_completed(futures):
+                        ticket = futures[future]
                         try:
-                            scraped_before = False
-                            for ticket in pending:
-                                if scraped_before and effective_delay > 0:
-                                    time.sleep(effective_delay)
-                                    context.clear_cookies()
-                                try:
-                                    data = _fetch_marks(page, ticket, summary_only=False, fast=True)
-                                    handle_portal_result(ticket, data)
-                                except Exception as exc:
-                                    handle_portal_result(ticket, {"error": str(exc), "hallTicket": ticket})
-                                scraped_before = True
-                        finally:
-                            browser.close()
-                else:
-                    from concurrent.futures import ThreadPoolExecutor, as_completed
-
-                    with ThreadPoolExecutor(max_workers=min(workers, len(pending))) as pool:
-                        futures = {pool.submit(_scrape_one_class_ticket, ticket): ticket for ticket in pending}
-                        for future in as_completed(futures):
-                            ticket = futures[future]
-                            try:
-                                data = future.result()
-                            except Exception as exc:
-                                data = {"error": str(exc), "hallTicket": ticket}
-                            handle_portal_result(ticket, data)
+                            data = future.result()
+                        except Exception as exc:
+                            data = {"error": str(exc), "hallTicket": ticket}
+                        handle_portal_result(ticket, data)
 
         result = finalize_class_result(students, failed, prefix, start_roll, end_roll, roll_digits)
         result["scrapeStatus"] = "complete"
