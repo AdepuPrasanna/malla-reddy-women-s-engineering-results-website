@@ -243,7 +243,7 @@ export default function ClassResultsPage() {
     <div className="space-y-8">
       <header>
         <h1 className="font-display text-3xl font-bold">Class Results</h1>
-        <p className="mt-2 text-muted">Scrape section-wide CGPA rankings from a hall ticket range</p>
+        <p className="mt-2 text-muted">Get section-wide CGPA rankings from a hall ticket range</p>
       </header>
 
       <Card>
@@ -291,9 +291,14 @@ export default function ClassResultsPage() {
             </p>
           )}
 
-          <Button type="submit" loading={loading} className="sm:min-w-[160px]">
+          <Button
+            type="submit"
+            loading={loading}
+            disabled={loading || isInProgress(data)}
+            className="sm:min-w-[160px]"
+          >
             <Users className="mr-2 inline h-4 w-4" />
-            Scrape Class Results
+            Get Results
           </Button>
         </form>
       </Card>
@@ -309,7 +314,7 @@ export default function ClassResultsPage() {
 
       {loadedFromFirebase && data && !isInProgress(data) && (
         <div className="rounded-card border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">
-          All {data.successCount} students loaded instantly from Firebase — no scrape needed.
+          All {data.successCount} students loaded instantly from Firebase.
         </div>
       )}
 
