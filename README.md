@@ -14,13 +14,13 @@ Built for **Malla Reddy Engineering College for Women (Autonomous), Hyderabad**
 
 ⭐ Star this repository if you find it useful!
 
-🌐 Live Demo: https://mrecwexamcell.vercel.app/
+🌐 Live Demo: malla-reddy-women-s-engineering-res.vercel.app
 
-🔗 Backend API: https://malla-reddy-women-s-engineering-results.onrender.com/
+🔗 Backend API: https://mrecw-connect-api.onrender.com
 
-💼 LinkedIn: https://www.linkedin.com/in/adepusukumar/
+💼 LinkedIn: https://www.linkedin.com/in/adepu-prasanna/
 
-📧 Contact: [bannysukumar@gmail.com](mailto:bannysukumar@gmail.com)
+📧 Contact: [prasannaadepu2005@gmail.com](mailto:prasannaadepu2005@gmail.com)
 
 </div>
 
@@ -279,7 +279,7 @@ mrecw-results-portal/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/Bannysukumar/malla-reddy-women-s-engineering-results-website.git
+git clone https://github.com/AdepuPrasanna/malla-reddy-women-s-engineering-results-website.git
 cd malla-reddy-women-s-engineering-results-website
 ```
 
@@ -366,10 +366,10 @@ python server.py     # Dev server on :3000
 
 | Variable | Required | Description | Example |
 |----------|----------|-------------|---------|
-| `VITE_API_URL` | Production | Backend API base URL | `https://malla-reddy-women-s-engineering-results.onrender.com` |
-| `VITE_SITE_URL` | Production | Public site URL (SEO, sitemap) | `https://mrecwexamcell.vercel.app` |
+| `VITE_API_URL` | Production | Backend API base URL | `https://mrecw-connect-api.onrender.com` |
+| `VITE_SITE_URL` | Production | Public site URL (SEO, sitemap) | `https://malla-reddy-women-s-engineering-res.vercel.app` |
 | `VITE_FIREBASE_*` | Optional | Firebase client config (Analytics) | See [Firebase setup](#firebase-setup-firestore-cache) |
-
+ 
 ```env
 VITE_API_URL=https://malla-reddy-women-s-engineering-results.onrender.com
 VITE_SITE_URL=https://mrecwexamcell.vercel.app
@@ -380,7 +380,7 @@ VITE_SITE_URL=https://mrecwexamcell.vercel.app
 | Variable | Required | Description | Example |
 |----------|----------|-------------|---------|
 | `PORT` | Render | Server port | `10000` |
-| `ALLOWED_ORIGINS` | Production | Comma-separated CORS origins | `https://mrecwexamcell.vercel.app` |
+| `ALLOWED_ORIGINS` | Production | Comma-separated CORS origins | `https://malla-reddy-women-s-engineering-res.vercel.app` |
 | `PYTHONUNBUFFERED` | Render | Real-time logs | `1` |
 | `FLASK_DEBUG` | Optional | Enable Flask debug mode locally | `false` |
 | `FRONTEND_DIST` | Optional | Path to built frontend (Docker only) | `/app/frontend/dist` |
@@ -390,7 +390,7 @@ VITE_SITE_URL=https://mrecwexamcell.vercel.app
 
 ```env
 PORT=10000
-ALLOWED_ORIGINS=https://mrecwexamcell.vercel.app
+ALLOWED_ORIGINS=https://malla-reddy-women-s-engineering-res.vercel.app
 PYTHONUNBUFFERED=1
 FIREBASE_CREDENTIALS_JSON={"type":"service_account","project_id":"your-project",...}
 FIREBASE_SYNC_REFRESH=false
@@ -400,7 +400,7 @@ FIREBASE_SYNC_REFRESH=false
 
 ### Firebase setup (Firestore cache + Analytics)
 
-**Project:** `malla-reddy-results-webs-ec93d`
+**Project:** `MRECWResults`
 
 #### Backend (Firestore cache — required for fast cached results)
 
@@ -419,13 +419,13 @@ Add these in **Vercel → Environment Variables** (from Firebase Console → Pro
 
 | Variable | Value |
 |----------|-------|
-| `VITE_FIREBASE_API_KEY` | Your web app API key |
-| `VITE_FIREBASE_AUTH_DOMAIN` | `malla-reddy-results-webs-ec93d.firebaseapp.com` |
-| `VITE_FIREBASE_PROJECT_ID` | `malla-reddy-results-webs-ec93d` |
-| `VITE_FIREBASE_STORAGE_BUCKET` | `malla-reddy-results-webs-ec93d.firebasestorage.app` |
-| `VITE_FIREBASE_MESSAGING_SENDER_ID` | `476309209964` |
-| `VITE_FIREBASE_APP_ID` | `1:476309209964:web:185ac0a1d2663189726949` |
-| `VITE_FIREBASE_MEASUREMENT_ID` | `G-MMGG20Z3E8` |
+| `VITE_FIREBASE_API_KEY` | AIzaSyB2PIUqkoCZOTNFsfKPRL5vmoVLT4p7Qa4 |
+| `VITE_FIREBASE_AUTH_DOMAIN` | `mrecwresults.firebaseapp.com` |
+| `VITE_FIREBASE_PROJECT_ID` | `mrecwresults` |
+| `VITE_FIREBASE_STORAGE_BUCKET` | `mrecwresults.firebasestorage.app` |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | `411663049175` |
+| `VITE_FIREBASE_APP_ID` | `1:411663049175:web:39a55d1ab6efd0af48ab92` |
+| `VITE_FIREBASE_MEASUREMENT_ID` | `G-3C5RZJ40LC` |
 | `VITE_GTAG_ID` | `GT-MJP8TXD7` |
 | `VITE_GA_MEASUREMENT_ID` | `G-MMGG20Z3E8` |
 | `VITE_GA_TAG_NAME` | `malla reddy results website` |
@@ -485,7 +485,7 @@ Deploy the **backend first**, then set `VITE_API_URL` on Vercel to your Render U
 
 1. Push code to GitHub.
 2. Go to [vercel.com](https://vercel.com) → **Add New Project**.
-3. Import the repository: `Bannysukumar/malla-reddy-women-s-engineering-results-website`.
+3.Import the repository: `AdepuPrasanna/malla-reddy-women-s-engineering-results-website`.
 4. Configure project settings:
 
 | Setting | Value |
@@ -541,7 +541,7 @@ vercel env add VITE_SITE_URL production
 4. Set `ALLOWED_ORIGINS` in the Render dashboard:
 
 ```
-https://mrecwexamcell.vercel.app
+https://malla-reddy-women-s-engineering-res.vercel.app
 ```
 
 5. Deploy and copy the service URL (e.g. `https://mrecw-connect-api.onrender.com`).
@@ -564,7 +564,7 @@ https://mrecwexamcell.vercel.app
 | Key | Value |
 |-----|-------|
 | `PORT` | `10000` |
-| `ALLOWED_ORIGINS` | `https://mrecwexamcell.vercel.app` |
+| `ALLOWED_ORIGINS` | `https://malla-reddy-women-s-engineering-res.vercel.app` |
 | `PYTHONUNBUFFERED` | `1` |
 
 4. Click **Create Web Service**.
@@ -728,12 +728,12 @@ Contributions are welcome!
 
 ## 👨‍💻 Developer
 
-### Adepu Sukumar
+### Adepu Prasanna
 
-Passionate Full Stack & Blockchain Developer
+Passionate Full Stack & Backend Developer
 
-📧 Email: [bannysukumar@gmail.com](mailto:bannysukumar@gmail.com)  
-💼 LinkedIn: https://www.linkedin.com/in/adepusukumar/
+📧 Email: [prasannaadepu2005@gmail.com](mailto:prasannaadepu2005@gmail.com)  
+💼 LinkedIn: https://www.linkedin.com/in/adepu-prasanna/
 
 ---
 
