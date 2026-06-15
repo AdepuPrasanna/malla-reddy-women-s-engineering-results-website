@@ -188,6 +188,7 @@ export interface StudentAttendance {
   activeSemester?: string | null;
   overallPercentage?: number | null;
   currentSemesterAvailable?: boolean;
+  pendingSemester?: string | null;
   sourceUrl?: string;
   semesters: AttendanceSemester[];
   message?: string | null;
@@ -212,6 +213,7 @@ export interface StudentOverallResult {
   latestSemester?: string | null;
   latestCgpa?: number | null;
   currentSemesterAvailable?: boolean;
+  pendingSemester?: string | null;
   sourceUrl?: string;
   semesters: OverallResultSemester[];
   message?: string | null;
@@ -235,6 +237,7 @@ export interface StudentSemwiseMarks {
   branch?: string | null;
   program?: string | null;
   currentSemester?: string | null;
+  pendingSemester?: string | null;
   cgpa?: string | null;
   percentage?: string | null;
   creditsObtained?: string | null;

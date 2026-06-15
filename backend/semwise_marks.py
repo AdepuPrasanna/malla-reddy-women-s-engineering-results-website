@@ -7,6 +7,7 @@ from typing import Any
 
 from bs4 import BeautifulSoup
 from playwright.sync_api import Page, sync_playwright
+from semester_order import infer_pending_semester, sort_semesters_desc
 
 from scraper import MARKS_URL, USER_AGENT, parse_marks_page
 
@@ -156,11 +157,16 @@ def parse_semwise_marks_page(html: str, hall_ticket: str) -> dict[str, Any]:
             "message": "No semester-wise marks found for this student.",
         }
 
+    semesters = sort_semesters_desc(semesters, lambda group: group.get("semester", ""))
+    published = [group.get("semester", "") for group in semesters]
+    pending_semester = infer_pending_semester(published, profile.get("currentSemester"))
+
     return {
         **profile,
         **{k: v for k, v in summary.items() if k not in profile},
         "sourceUrl": SOURCE_URL,
         "semesters": semesters,
+        "pendingSemester": pending_semester,
     }
 
 

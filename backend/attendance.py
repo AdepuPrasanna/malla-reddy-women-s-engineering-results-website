@@ -7,6 +7,7 @@ from typing import Any
 
 from bs4 import BeautifulSoup
 from playwright.sync_api import Page, sync_playwright
+from semester_order import infer_pending_semester, sort_attendance_months, sort_semesters_desc
 
 from scraper import BASE, MARKS_URL, USER_AGENT
 
@@ -145,6 +146,13 @@ def parse_attendance_page(html: str, hall_ticket: str) -> dict[str, Any]:
     )
     overall = (matched.get("summary") or {}).get("percentage") if matched else None
 
+    semesters = [
+        sort_attendance_months(group)
+        for group in sort_semesters_desc(semesters, lambda group: group.get("semester", ""))
+    ]
+    published = [group.get("semester", "") for group in semesters]
+    pending_semester = infer_pending_semester(published, current_semester_label)
+
     return {
         **profile,
         "sourceUrl": SOURCE_URL,
@@ -152,6 +160,7 @@ def parse_attendance_page(html: str, hall_ticket: str) -> dict[str, Any]:
         "overallPercentage": overall,
         "activeSemester": current_semester_label,
         "currentSemesterAvailable": matched is not None,
+        "pendingSemester": pending_semester,
     }
 
 

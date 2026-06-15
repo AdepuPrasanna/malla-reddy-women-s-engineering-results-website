@@ -7,6 +7,7 @@ from typing import Any
 
 from bs4 import BeautifulSoup
 from playwright.sync_api import Page, sync_playwright
+from semester_order import infer_pending_semester, semester_sort_key, sort_semesters_desc
 
 from scraper import BASE, MARKS_URL, USER_AGENT
 
@@ -111,15 +112,16 @@ def parse_overall_result_page(html: str, hall_ticket: str) -> dict[str, Any]:
         latest_semester = matched.get("semester")
         latest_cgpa = matched.get("cgpa")
     else:
-        def _sno_key(row: dict[str, Any]) -> int:
-            try:
-                return int(str(row.get("sno") or "999"))
-            except ValueError:
-                return 999
-
-        latest_row = min(semesters, key=_sno_key)
+        latest_row = max(semesters, key=lambda row: semester_sort_key(row.get("semester", "")))
         latest_semester = latest_row.get("semester")
         latest_cgpa = latest_row.get("cgpa")
+
+    semesters = sort_semesters_desc(semesters, lambda row: row.get("semester", ""))
+    for index, row in enumerate(semesters, start=1):
+        row["sno"] = str(index)
+
+    published = [row.get("semester", "") for row in semesters]
+    pending_semester = infer_pending_semester(published, current_semester)
 
     return {
         **profile,
@@ -128,6 +130,7 @@ def parse_overall_result_page(html: str, hall_ticket: str) -> dict[str, Any]:
         "latestCgpa": latest_cgpa,
         "latestSemester": latest_semester,
         "currentSemesterAvailable": matched is not None,
+        "pendingSemester": pending_semester,
     }
 
 

@@ -8,6 +8,7 @@ import { Badge } from "@/shared/components/ui/Badge";
 import { Card } from "@/shared/components/ui/Card";
 import { ResultSkeleton } from "@/shared/components/ui/Skeleton";
 import { fetchSemwiseMarks, queryKeys } from "@/shared/lib/api";
+import { inferPendingSemester, sortBySemesterDesc } from "@/shared/lib/semesterSort";
 import { useSearchHistory } from "@/shared/hooks/useSearchHistory";
 import type { SemwiseMarksSemester, StudentSemwiseMarks } from "@/shared/types/results";
 
@@ -141,7 +142,12 @@ export default function SemwiseMarksPage() {
     retry: 1,
   });
 
-  const hasCurrentSemester = (data?.semesters || []).some((s) => s.semester === data?.currentSemester);
+  const pendingSemester =
+    data?.pendingSemester ??
+    inferPendingSemester(
+      (data?.semesters || []).map((s) => s.semester),
+      data?.currentSemester
+    );
 
   return (
     <div className="space-y-8">
@@ -191,9 +197,9 @@ export default function SemwiseMarksPage() {
 
           <SemwiseProfile data={data} />
 
-          {!hasCurrentSemester && data.currentSemester && data.semesters.length > 0 && (
+          {pendingSemester && (
             <div className="rounded-card border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
-              Marks for {data.currentSemester} are not published yet. Showing completed semesters below.
+              Marks for {pendingSemester} are not published yet. Showing completed semesters below.
             </div>
           )}
 
@@ -203,11 +209,11 @@ export default function SemwiseMarksPage() {
             </Card>
           ) : (
             <div className="space-y-6">
-              {[...data.semesters].reverse().map((group) => (
+              {sortBySemesterDesc(data.semesters, (group) => group.semester).map((group) => (
                 <SemesterMarksBlock
                   key={group.semester}
                   group={group}
-                  active={group.semester === data.currentSemester}
+                  active={group.semester === pendingSemester}
                 />
               ))}
             </div>

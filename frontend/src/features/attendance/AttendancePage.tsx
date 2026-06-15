@@ -8,6 +8,7 @@ import { Badge } from "@/shared/components/ui/Badge";
 import { Card } from "@/shared/components/ui/Card";
 import { ResultSkeleton } from "@/shared/components/ui/Skeleton";
 import { fetchAttendance, queryKeys } from "@/shared/lib/api";
+import { compareAcademicMonths, inferPendingSemester, sortBySemesterDesc } from "@/shared/lib/semesterSort";
 import { useSearchHistory } from "@/shared/hooks/useSearchHistory";
 import type { AttendanceSemester, StudentAttendance } from "@/shared/types/results";
 
@@ -28,6 +29,7 @@ function AttendanceSemesterBlock({
   active: boolean;
 }) {
   const summary = group.summary;
+  const months = [...group.months].sort((a, b) => compareAcademicMonths(a.month, b.month));
 
   return (
     <Card className={active ? "ring-1 ring-primary/40" : undefined}>
@@ -57,7 +59,7 @@ function AttendanceSemesterBlock({
             </tr>
           </thead>
           <tbody>
-            {group.months.map((row) => (
+            {months.map((row) => (
               <tr key={`${group.semester}-${row.month}`} className="border-b border-foreground/5">
                 <td className="px-4 py-3 font-medium">{row.month}</td>
                 <td className="px-4 py-3">{row.conducted ?? "—"}</td>
@@ -134,7 +136,13 @@ export default function AttendancePage() {
     retry: 1,
   });
 
-  const sortedSemesters = [...(data?.semesters || [])].reverse();
+  const sortedSemesters = sortBySemesterDesc(data?.semesters || [], (group) => group.semester);
+  const pendingSemester =
+    data?.pendingSemester ??
+    inferPendingSemester(
+      (data?.semesters || []).map((group) => group.semester),
+      data?.currentSemester ?? data?.activeSemester
+    );
 
   return (
     <div className="space-y-8">
@@ -190,16 +198,16 @@ export default function AttendancePage() {
             </Card>
           ) : (
             <div className="space-y-6">
-              {data.currentSemesterAvailable === false && data.activeSemester && (
+              {pendingSemester && (
                 <div className="rounded-card border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
-                  Attendance for {data.activeSemester} is not published on the portal yet. Showing historical semesters below.
+                  Attendance for {pendingSemester} is not published on the portal yet. Showing historical semesters below.
                 </div>
               )}
               {sortedSemesters.map((group) => (
                 <AttendanceSemesterBlock
                   key={group.semester}
                   group={group}
-                  active={group.semester === data.activeSemester}
+                  active={group.semester === pendingSemester}
                 />
               ))}
             </div>

@@ -8,6 +8,7 @@ import { Badge } from "@/shared/components/ui/Badge";
 import { Card } from "@/shared/components/ui/Card";
 import { ResultSkeleton } from "@/shared/components/ui/Skeleton";
 import { fetchOverallResult, queryKeys } from "@/shared/lib/api";
+import { inferPendingSemester, sortBySemesterDesc } from "@/shared/lib/semesterSort";
 import { useSearchHistory } from "@/shared/hooks/useSearchHistory";
 import type { StudentOverallResult } from "@/shared/types/results";
 
@@ -71,11 +72,13 @@ export default function OverallResultPage() {
     retry: 1,
   });
 
-  const sortedSemesters = [...(data?.semesters || [])].sort((a, b) => {
-    const aSno = parseInt(a.sno || "999", 10);
-    const bSno = parseInt(b.sno || "999", 10);
-    return aSno - bSno;
-  });
+  const sortedSemesters = sortBySemesterDesc(data?.semesters || [], (row) => row.semester);
+  const pendingSemester =
+    data?.pendingSemester ??
+    inferPendingSemester(
+      (data?.semesters || []).map((row) => row.semester),
+      data?.currentSemester
+    );
 
   return (
     <div className="space-y-8">
@@ -125,9 +128,9 @@ export default function OverallResultPage() {
 
           <OverallResultProfile data={data} />
 
-          {data.currentSemesterAvailable === false && data.currentSemester && (
+          {pendingSemester && (
             <div className="rounded-card border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning">
-              Results for {data.currentSemester} are not published on the portal yet. Showing completed semesters below.
+              Results for {pendingSemester} are not published on the portal yet. Showing completed semesters below.
             </div>
           )}
 
@@ -152,15 +155,15 @@ export default function OverallResultPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {sortedSemesters.map((row) => {
+                    {sortedSemesters.map((row, index) => {
                       const isCurrent = row.semester === data.currentSemester;
                       const isLatest = row.semester === data.latestSemester;
                       return (
                         <tr
-                          key={`${row.sno}-${row.semester}`}
+                          key={`${row.semester}-${index}`}
                           className={`border-b border-foreground/5 ${isCurrent || isLatest ? "bg-primary/5" : ""}`}
                         >
-                          <td className="px-4 py-3">{row.sno ?? "—"}</td>
+                          <td className="px-4 py-3">{index + 1}</td>
                           <td className="px-4 py-3">
                             <div className="flex flex-wrap items-center gap-2">
                               <span className="font-medium">{row.semester}</span>
