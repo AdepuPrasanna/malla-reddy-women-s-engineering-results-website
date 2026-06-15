@@ -14,13 +14,13 @@ Built for **Malla Reddy Engineering College for Women (Autonomous), Hyderabad**
 
 ⭐ Star this repository if you find it useful!
 
-🌐 Live Demo: https://mrecwexamcell.vercel.app/
+🌐 Live Demo: malla-reddy-women-s-engineering-res.vercel.app
 
-🔗 Backend API: https://malla-reddy-women-s-engineering-results.onrender.com/
+🔗 Backend API: https://mrecw-connect-api.onrender.com
 
-💼 LinkedIn: https://www.linkedin.com/in/adepusukumar/
+💼 LinkedIn: https://www.linkedin.com/in/adepu-prasanna/
 
-📧 Contact: [bannysukumar@gmail.com](mailto:bannysukumar@gmail.com)
+📧 Contact: [prasannaadepu2005@gmail.com](mailto:prasannaadepu2005@gmail.com)
 
 </div>
 
@@ -730,10 +730,10 @@ Contributions are welcome!
 
 ### Adepu Sukumar
 
-Passionate Full Stack & Blockchain Developer
+Passionate Full Stack & Backend Developer
 
-📧 Email: [bannysukumar@gmail.com](mailto:bannysukumar@gmail.com)  
-💼 LinkedIn: https://www.linkedin.com/in/adepusukumar/
+📧 Email: [prasannaadepu2005@gmail.com](mailto:prasannaadepu2005@gmail.com)  
+💼 LinkedIn: https://www.linkedin.com/in/adepu-prasanna/
 
 ---
 
