@@ -17,6 +17,11 @@ USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 )
+DEFAULT_CLASS_DELAY_SEC = 0.5
+PAGE_WAIT_FAST = "domcontentloaded"
+PAGE_WAIT_STANDARD = "networkidle"
+PAGE_TIMEOUT_FAST_MS = 45_000
+PAGE_TIMEOUT_STANDARD_MS = 60_000
 
 
 def build_hall_ticket(prefix: str, roll: int, roll_digits: int = 2) -> str:
@@ -48,9 +53,11 @@ def fetch_class_results(
     start_roll: int,
     end_roll: int,
     roll_digits: int = 2,
-    delay_sec: float = 1.5,
+    delay_sec: float = DEFAULT_CLASS_DELAY_SEC,
     summary_only: bool = True,
     on_progress=None,
+    *,
+    fast: bool = True,
 ) -> dict:
     prefix = prefix.strip().upper()
     if start_roll > end_roll:
@@ -70,8 +77,9 @@ def fetch_class_results(
         page = context.new_page()
 
         try:
+            scraped_before = False
             for index, ticket in enumerate(tickets):
-                if index > 0:
+                if scraped_before and delay_sec > 0:
                     time.sleep(delay_sec)
                     context.clear_cookies()
 
@@ -79,13 +87,15 @@ def fetch_class_results(
                     on_progress(index + 1, len(tickets), ticket)
 
                 try:
-                    data = _fetch_marks(page, ticket, summary_only=summary_only)
+                    data = _fetch_marks(page, ticket, summary_only=summary_only, fast=fast)
                     if "error" in data:
                         failed.append({"hallTicket": ticket, "error": data["error"]})
                     else:
                         students.append(data)
                 except Exception as exc:
                     failed.append({"hallTicket": ticket, "error": str(exc)})
+
+                scraped_before = True
         finally:
             browser.close()
 
@@ -108,27 +118,30 @@ def fetch_class_results(
     }
 
 
-def _fetch_marks(page: Page, hall_ticket: str, summary_only: bool = False) -> dict:
-    page.goto(MARKS_URL, wait_until="networkidle", timeout=60000)
+def _fetch_marks(page: Page, hall_ticket: str, summary_only: bool = False, *, fast: bool = False) -> dict:
+    wait = PAGE_WAIT_FAST if fast else PAGE_WAIT_STANDARD
+    timeout = PAGE_TIMEOUT_FAST_MS if fast else PAGE_TIMEOUT_STANDARD_MS
+
+    page.goto(MARKS_URL, wait_until=wait, timeout=timeout)
 
     page.fill("#txtUserName", hall_ticket)
     page.click("#btnNext")
-    page.wait_for_load_state("networkidle")
+    page.wait_for_load_state(wait, timeout=timeout)
 
     if page.locator("#txtPassword").count() == 0:
         return {"error": "Invalid hall ticket", "hallTicket": hall_ticket}
 
     page.fill("#txtPassword", hall_ticket)
     page.click("#btnSubmit")
-    page.wait_for_load_state("networkidle")
+    page.wait_for_load_state(wait, timeout=timeout)
 
     content = page.content()
     if hall_ticket not in content and "WELCOME" not in content.upper():
         return {"error": "Login failed", "hallTicket": hall_ticket}
 
     page.evaluate("__doPostBack('ctl00$cpStud$lnkOverallMarksSemwiseMarks','')")
-    page.wait_for_url("**/overallMarks.aspx", timeout=60000)
-    page.wait_for_load_state("networkidle")
+    page.wait_for_url("**/overallMarks.aspx", timeout=timeout)
+    page.wait_for_load_state(wait, timeout=timeout)
 
     html = page.content()
     if "CGPA" not in html:

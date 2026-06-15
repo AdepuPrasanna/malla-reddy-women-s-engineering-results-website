@@ -33,6 +33,7 @@ from firebase_cache import (
     save_semwise_marks,
     log_search,
     to_summary,
+    to_class_student,
 )
 from scraper import (
     USER_AGENT,
@@ -132,7 +133,7 @@ def assemble_class_from_individual_cache(
                 failed.append({"hallTicket": ticket, "error": data.get("error") or "Invalid hall ticket"})
                 cached_count += 1
                 continue
-            students.append(to_summary(data))
+            students.append(to_class_student(data))
             cached_count += 1
 
     total = len(tickets)
@@ -211,6 +212,46 @@ def _class_progress_from_result(result: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _class_scrape_delay_sec(delay_sec: float) -> float:
+    raw = os.getenv("CLASS_SCRAPE_DELAY")
+    if raw is not None:
+        try:
+            return max(0.0, float(raw))
+        except ValueError:
+            pass
+    return max(0.0, delay_sec)
+
+
+def _class_scrape_workers() -> int:
+    raw = os.getenv("CLASS_SCRAPE_WORKERS", "20")
+    try:
+        return max(1, min(int(raw), 20))
+    except ValueError:
+        return 20
+
+
+def _scrape_one_class_ticket(ticket: str, *, summary_only: bool = False) -> dict:
+    from playwright.sync_api import sync_playwright
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(user_agent=USER_AGENT)
+        page = context.new_page()
+        try:
+            return _fetch_marks(page, ticket, summary_only=summary_only, fast=True)
+        finally:
+            browser.close()
+
+
+def _resolve_cached_class_student(ticket: str, *, force_refresh: bool) -> dict | None:
+    if force_refresh or not is_enabled():
+        return None
+    cached = resolve_class_student(ticket, force_refresh=False)
+    if "error" in cached:
+        return None
+    return cached
+
+
 def _execute_class_scrape(
     key: str,
     prefix: str,
@@ -236,7 +277,7 @@ def _execute_class_scrape(
             data = cached.get("data") or {}
             if "error" in data:
                 continue
-            cached_map[ticket] = to_summary(data)
+            cached_map[ticket] = to_class_student(data)
 
     cached_preload = len(cached_map)
     _class_job_push_event(key, {
@@ -269,82 +310,99 @@ def _execute_class_scrape(
                     current=index + 1, total=total, hall_ticket=ticket, cached_count=len(students),
                 )
         else:
-            from playwright.sync_api import sync_playwright
+            effective_delay = _class_scrape_delay_sec(delay_sec)
+            pending: list[str] = []
+            resolved_count = 0
 
-            with sync_playwright() as p:
-                browser = p.chromium.launch(headless=True)
-                context = browser.new_context(user_agent=USER_AGENT)
-                page = context.new_page()
-                try:
-                    for index, ticket in enumerate(tickets):
-                        if not force_refresh and ticket in cached_map:
-                            student = cached_map[ticket]
-                            students.append(student)
-                            current = index + 1
-                            _class_job_push_event(key, {
-                                "type": "progress",
-                                "current": current,
-                                "total": total,
-                                "remaining": max(0, total - current),
-                                "cachedCount": len(students),
-                                "hallTicket": ticket,
-                                "cached": True,
-                            })
-                            _class_job_push_event(key, {"type": "student", "student": student, "cached": True})
-                            _save_partial_class_result(
-                                key, students, failed, prefix, start_roll, end_roll, roll_digits,
-                                current=current, total=total, hall_ticket=ticket, cached_count=len(students),
-                            )
-                            continue
+            def emit_progress(ticket: str, *, cached: bool = False) -> None:
+                _class_job_push_event(key, {
+                    "type": "progress",
+                    "current": resolved_count,
+                    "total": total,
+                    "remaining": max(0, total - resolved_count),
+                    "cachedCount": len(students),
+                    "hallTicket": ticket,
+                    "cached": cached,
+                })
 
-                        if index > 0:
-                            time.sleep(delay_sec)
-                            context.clear_cookies()
+            def save_progress(ticket: str) -> None:
+                _save_partial_class_result(
+                    key, students, failed, prefix, start_roll, end_roll, roll_digits,
+                    current=resolved_count, total=total, hall_ticket=ticket, cached_count=len(students),
+                )
 
-                        current = index + 1
-                        _class_job_push_event(key, {
-                            "type": "progress",
-                            "current": current,
-                            "total": total,
-                            "remaining": max(0, total - current),
-                            "cachedCount": len(students),
-                            "hallTicket": ticket,
-                        })
+            for ticket in tickets:
+                if not force_refresh and ticket in cached_map:
+                    student = cached_map[ticket]
+                    students.append(student)
+                    resolved_count += 1
+                    emit_progress(ticket, cached=True)
+                    _class_job_push_event(key, {"type": "student", "student": student, "cached": True})
+                    save_progress(ticket)
+                    continue
 
-                        if not force_refresh and is_enabled():
-                            cached = resolve_class_student(ticket, force_refresh=False)
-                            if "error" not in cached:
-                                students.append(cached)
-                                _class_job_push_event(key, {"type": "student", "student": cached, "cached": True})
-                                _save_partial_class_result(
-                                    key, students, failed, prefix, start_roll, end_roll, roll_digits,
-                                    current=current, total=total, hall_ticket=ticket, cached_count=len(students),
-                                )
-                                continue
+                cached = _resolve_cached_class_student(ticket, force_refresh=force_refresh)
+                if cached:
+                    students.append(cached)
+                    resolved_count += 1
+                    emit_progress(ticket, cached=True)
+                    _class_job_push_event(key, {"type": "student", "student": cached, "cached": True})
+                    save_progress(ticket)
+                    continue
 
+                pending.append(ticket)
+
+            def handle_portal_result(ticket: str, data: dict) -> None:
+                nonlocal resolved_count
+                resolved_count += 1
+                emit_progress(ticket, cached=False)
+                if "error" in data:
+                    item = {"hallTicket": ticket, "error": data["error"]}
+                    failed.append(item)
+                    _class_job_push_event(key, {"type": "failed", "student": item})
+                else:
+                    row = to_class_student(data)
+                    if is_enabled():
+                        save_result(ticket, data)
+                    students.append(row)
+                    _class_job_push_event(key, {"type": "student", "student": row, "cached": False})
+                save_progress(ticket)
+
+            if pending:
+                workers = _class_scrape_workers() if len(pending) > 1 else 1
+                if workers <= 1:
+                    from playwright.sync_api import sync_playwright
+
+                    with sync_playwright() as p:
+                        browser = p.chromium.launch(headless=True)
+                        context = browser.new_context(user_agent=USER_AGENT)
+                        page = context.new_page()
                         try:
-                            data = _fetch_marks(page, ticket, summary_only=True)
-                            if "error" in data:
-                                item = {"hallTicket": ticket, "error": data["error"]}
-                                failed.append(item)
-                                _class_job_push_event(key, {"type": "failed", "student": item})
-                            else:
-                                summary = to_summary(data)
-                                if is_enabled():
-                                    save_result(ticket, data)
-                                students.append(summary)
-                                _class_job_push_event(key, {"type": "student", "student": summary, "cached": False})
-                        except Exception as exc:
-                            item = {"hallTicket": ticket, "error": str(exc)}
-                            failed.append(item)
-                            _class_job_push_event(key, {"type": "failed", "student": item})
+                            scraped_before = False
+                            for ticket in pending:
+                                if scraped_before and effective_delay > 0:
+                                    time.sleep(effective_delay)
+                                    context.clear_cookies()
+                                try:
+                                    data = _fetch_marks(page, ticket, summary_only=False, fast=True)
+                                    handle_portal_result(ticket, data)
+                                except Exception as exc:
+                                    handle_portal_result(ticket, {"error": str(exc), "hallTicket": ticket})
+                                scraped_before = True
+                        finally:
+                            browser.close()
+                else:
+                    from concurrent.futures import ThreadPoolExecutor, as_completed
 
-                        _save_partial_class_result(
-                            key, students, failed, prefix, start_roll, end_roll, roll_digits,
-                            current=current, total=total, hall_ticket=ticket, cached_count=len(students),
-                        )
-                finally:
-                    browser.close()
+                    with ThreadPoolExecutor(max_workers=min(workers, len(pending))) as pool:
+                        futures = {pool.submit(_scrape_one_class_ticket, ticket): ticket for ticket in pending}
+                        for future in as_completed(futures):
+                            ticket = futures[future]
+                            try:
+                                data = future.result()
+                            except Exception as exc:
+                                data = {"error": str(exc), "hallTicket": ticket}
+                            handle_portal_result(ticket, data)
 
         result = finalize_class_result(students, failed, prefix, start_roll, end_roll, roll_digits)
         result["scrapeStatus"] = "complete"
@@ -374,7 +432,7 @@ def start_class_scrape(
     start_roll: int,
     end_roll: int,
     roll_digits: int = 2,
-    delay_sec: float = 1.5,
+    delay_sec: float = 0.5,
     *,
     force_refresh: bool = False,
 ) -> str:
@@ -788,7 +846,7 @@ def get_class_results(
     start_roll: int,
     end_roll: int,
     roll_digits: int = 2,
-    delay_sec: float = 1.5,
+    delay_sec: float = 0.5,
     *,
     force_refresh: bool = False,
 ) -> dict:
@@ -880,16 +938,16 @@ def resolve_class_student(ticket: str, *, force_refresh: bool = False) -> dict:
         cached = get_cached_result(ticket)
         if cached:
             _schedule_student_refresh(ticket, cached["data"])
-            return to_summary(cached["data"])
+            return to_class_student(cached["data"])
 
     scraped = login_and_fetch_marks(ticket)
     if "error" in scraped:
         return scraped
 
-    summary = to_summary(scraped)
+    row = to_class_student(scraped)
     if is_enabled():
         save_result(ticket, scraped)
-    return summary
+    return row
 
 
 def build_class_from_cache(prefix: str, start_roll: int, end_roll: int, roll_digits: int) -> dict | None:

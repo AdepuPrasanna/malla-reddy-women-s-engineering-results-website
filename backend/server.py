@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, send_from_directory, Response
 from flask_cors import CORS
-from scraper import infer_prefix
+from scraper import infer_prefix, DEFAULT_CLASS_DELAY_SEC
 from results_service import (
     get_backlog_report,
     get_class_results,
@@ -320,7 +320,7 @@ def post_class_results():
     roll_digits = int(body.get("rollDigits") or 2)
     start_roll = int(body.get("startRoll") or 1)
     end_roll = int(body.get("endRoll") or 60)
-    delay_sec = float(body.get("delaySec") or 1.5)
+    delay_sec = float(body.get("delaySec") or DEFAULT_CLASS_DELAY_SEC)
     stream = bool(body.get("stream"))
 
     if not prefix and sample_ticket:

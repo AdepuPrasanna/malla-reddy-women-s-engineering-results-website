@@ -28,7 +28,7 @@ from firebase_cache import (
     save_result,
     save_semwise_marks,
 )
-from scraper import fetch_class_results, login_and_fetch_marks
+from scraper import DEFAULT_CLASS_DELAY_SEC, fetch_class_results, login_and_fetch_marks
 from attendance import fetch_student_attendance
 from overall_result import fetch_student_overall_result
 from semwise_marks import fetch_student_semwise_marks
@@ -245,7 +245,7 @@ def _stream_class_results_scrape():
                 section["startRoll"],
                 section["endRoll"],
                 section["rollDigits"],
-                delay_sec=1.5,
+                delay_sec=DEFAULT_CLASS_DELAY_SEC,
                 summary_only=True,
             )
 

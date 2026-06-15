@@ -109,9 +109,12 @@ export interface ClassStudent {
   studentName?: string;
   branch?: string;
   cgpa?: string;
+  percentage?: string;
   creditsObtained?: string;
   creditsTotal?: string;
   subjectsDue?: string;
+  subjectsTotal?: string;
+  subjects?: Subject[];
 }
 
 export interface ClassScrapeProgress {

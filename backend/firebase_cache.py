@@ -281,6 +281,15 @@ def to_summary(student: dict) -> dict:
     }
 
 
+def to_class_student(student: dict) -> dict:
+    """Full class row — summary plus subject marks when available."""
+    row = to_summary(student)
+    subjects = student.get("subjects")
+    if subjects:
+        row["subjects"] = subjects
+    return row
+
+
 def log_search(hall_ticket: str) -> None:
     if not _enabled or _db is None:
         return
