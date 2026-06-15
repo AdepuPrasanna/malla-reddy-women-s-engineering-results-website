@@ -21,3 +21,6 @@ firebase-service-account.json
 # OS
 .DS_Store
 Thumbs.db
+
+# Docs
+README.md

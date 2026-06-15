@@ -12,6 +12,8 @@ import type { ClassResult, ClassStudent } from "@/shared/types/results";
 
 const PENDING_KEY = "mrecw_class_scrape_pending";
 const POLL_MS = 2500;
+/** Set to true to re-enable class results fetching on this page. */
+const CLASS_RESULTS_FETCH_ENABLED = false;
 
 type ClassPayload = ReturnType<typeof toClassPayload>;
 
@@ -189,8 +191,14 @@ export default function ClassResultsPage() {
   }, [applyResult, startPoll, stopPoll]);
 
   useEffect(() => {
+    if (!CLASS_RESULTS_FETCH_ENABLED) {
+      sessionStorage.removeItem(PENDING_KEY);
+      return () => stopPoll();
+    }
+
+    /* Resume pending class scrape on page load */
     const raw = sessionStorage.getItem(PENDING_KEY);
-    if (!raw) return;
+    if (!raw) return () => stopPoll();
 
     try {
       const payload = JSON.parse(raw) as ClassPayload;
@@ -227,6 +235,9 @@ export default function ClassResultsPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!CLASS_RESULTS_FETCH_ENABLED) return;
+
+    /* Fetch class results for the entered hall ticket range */
     setError("");
     try {
       const range = parseClassTicketRange(firstTicket, lastTicket);
@@ -243,7 +254,7 @@ export default function ClassResultsPage() {
     <div className="space-y-8">
       <header>
         <h1 className="font-display text-3xl font-bold">Class Results</h1>
-        <p className="mt-2 text-muted">Scrape section-wide CGPA rankings from a hall ticket range</p>
+        <p className="mt-2 text-muted">Get section-wide CGPA rankings from a hall ticket range</p>
       </header>
 
       <Card>
@@ -291,9 +302,14 @@ export default function ClassResultsPage() {
             </p>
           )}
 
-          <Button type="submit" loading={loading} className="sm:min-w-[160px]">
+          <Button
+            type="submit"
+            loading={loading}
+            disabled={!CLASS_RESULTS_FETCH_ENABLED || loading || isInProgress(data)}
+            className="sm:min-w-[160px]"
+          >
             <Users className="mr-2 inline h-4 w-4" />
-            Scrape Class Results
+            Get Results
           </Button>
         </form>
       </Card>
@@ -309,7 +325,7 @@ export default function ClassResultsPage() {
 
       {loadedFromFirebase && data && !isInProgress(data) && (
         <div className="rounded-card border border-success/30 bg-success/10 px-4 py-3 text-sm text-success">
-          All {data.successCount} students loaded instantly from Firebase — no scrape needed.
+          All {data.successCount} students loaded instantly from Firebase.
         </div>
       )}
 
